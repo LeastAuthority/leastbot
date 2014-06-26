@@ -49,7 +49,15 @@ class MockingTestCase (unittest.TestCase):
 
 class EqCallback (object):
     """I am useful for making assert_calls_equal checks which are more flexible than standard ==."""
-    def __init__(self, eqcb, repstr):
+    def __init__(self, eqcb, repstr=None):
+        if repstr is None:
+            if eqcb.__doc__:
+                repstr = eqcb.__doc__
+            elif eqcb.__name__:
+                repstr = eqcb.__name__
+            else:
+                repstr = repr(eqcb)
+
         self._eqcb = eqcb
         self._repstr = repstr
 
@@ -60,4 +68,4 @@ class EqCallback (object):
         return self._repstr
 
 
-ArgIsType = lambda T: EqCallback(lambda v: isinstance(v, T), 'ArgIsEqual(%s)' % (T.__name__,))
+ArgIsType = lambda T: EqCallback(lambda v: isinstance(v, T), 'ArgIsType(%s)' % (T.__name__,))
