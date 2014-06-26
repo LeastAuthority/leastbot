@@ -23,7 +23,7 @@ def main(args=sys.argv[1:], reactor=reactor):
         print 'unhandled event:'
         pprint.pprint(a, kw)
 
-    badsecret = 'Not a very good secret.'
+    badsecret = 'abc'
     s = webserver.WebServer(reactor, badsecret, handle_event)
     s.listen(8080)
 

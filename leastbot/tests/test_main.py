@@ -22,7 +22,7 @@ class main_Tests (LoggingPatcherTestCase):
 
         main(args=[], reactor=m_reactor)
 
-        expectedsecret = 'Not a very good secret.'
+        expectedsecret = 'abc'
         expectedport = 8080
 
         self.assert_calls_equal(
