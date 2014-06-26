@@ -43,9 +43,15 @@ class parse_args_Tests (MockingTestCase):
 
     def test_log_level(self):
         m_basicConfig = self.patch('logging.basicConfig')
+        m_PythonLoggingObserver = self.patch('twisted.python.log.PythonLoggingObserver')
 
         parse_args(['--log-level', 'DEBUG'])
 
         self.assert_calls_equal(
             m_basicConfig,
             [call(stream=sys.stdout, format=LogFormat, datefmt=DateFormat, level=logging.DEBUG)])
+
+        self.assert_calls_equal(
+            m_PythonLoggingObserver,
+            [call(),
+             call().start()])
