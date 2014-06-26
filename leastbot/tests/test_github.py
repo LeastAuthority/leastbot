@@ -1,12 +1,35 @@
-import unittest
+from twisted.trial import unittest
+from mock import ANY, call
 
-from leastbot.github import SignatureVerifier
+from leastbot.tests.mockutil import MockingTestCase
+from leastbot import github
+
+
+
+class WebhookResourceTests (MockingTestCase):
+    def test_render_GET(self):
+        m_handle_event = self.make_mock()
+        m_request = self.make_mock()
+
+        res = github.WebHookResource(m_handle_event)
+        res.render_GET(m_request)
+
+        self.assert_calls_equal(
+            m_handle_event,
+            [])
+
+        self.assert_calls_equal(
+            m_request,
+            [call.setResponseCode(403),
+             call.write(ANY),
+             call.finish()])
+
+
 
 
 class SignatureVerifierTests (unittest.TestCase):
-
     def test_hmac_vector(self):
-        sigver = SignatureVerifier(sharedsecret=XHubSignatureTestVector.sharedsecret)
+        sigver = github.SignatureVerifier(sharedsecret=XHubSignatureTestVector.sharedsecret)
 
         # Note: We verify this private method because we want to bypass
         # the time-invariant comparison layer (and we don't want to
