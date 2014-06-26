@@ -46,6 +46,14 @@ class WebhookResourceTests (MockingTestCase):
 
         self.m_handle_event = self.make_mock()
         self.m_request = self.make_mock()
+
+        headers = {
+            'X-Github-Event': 'ping',
+            'X-Github-Delivery': 'a fake unique id',
+            'X-Hub-Signature': 'sha1-' + self.expsig,
+            }
+        self.m_request.getHeader.side_effect = headers.get
+
         self.res = github.WebhookResource(self.secret, self.m_handle_event)
 
     def test_render_GET(self):
@@ -63,12 +71,6 @@ class WebhookResourceTests (MockingTestCase):
     def test_render_POST_ping(self):
         self.m_request.content.getvalue.return_value = self.pingbody
 
-        self.m_request.requestHeaders = {
-            'X-Github-Event': 'ping',
-            'X-Github-Delivery': 'a fake unique id',
-            'X-Hub-Signature': 'sha1-' + self.expsig,
-            }
-
         self.res.render_POST(self.m_request)
 
         self.assert_calls_equal(
@@ -85,12 +87,6 @@ class WebhookResourceTests (MockingTestCase):
         tweakedmessage['id'] += 1
 
         self.m_request.content.getvalue.return_value = json.dumps(tweakedmessage)
-
-        self.m_request.requestHeaders = {
-            'X-Github-Event': 'ping',
-            'X-Github-Delivery': 'a fake unique id',
-            'X-Hub-Signature': 'sha1-' + self.expsig,
-            }
 
         self.res.render_POST(self.m_request)
 
