@@ -46,11 +46,12 @@ class WebhookResourceTests (MockingTestCase):
 
         self.m_handle_event = self.make_mock()
         self.m_request = self.make_mock()
+        self.m_request.content.getvalue.return_value = self.pingbody
 
         headers = {
             'X-Github-Event': 'ping',
             'X-Github-Delivery': 'a fake unique id',
-            'X-Hub-Signature': 'sha1-' + self.expsig,
+            'X-Hub-Signature': 'sha1-' + self.pingexpsig,
             }
         self.m_request.getHeader.side_effect = headers.get
 
@@ -69,22 +70,24 @@ class WebhookResourceTests (MockingTestCase):
              call.finish()])
 
     def test_render_POST_ping(self):
-        self.m_request.content.getvalue.return_value = self.pingbody
-
         self.res.render_POST(self.m_request)
 
         self.assert_calls_equal(
             self.m_request,
-            [call.setResponseCode(200, 'OK'),
+            [call.getHeader('X-Hub-Signature'),
+             call.content.getvalue(),
+             call.getHeader('X-Github-Event'),
+             call.getHeader('X-Github-Delivery'),
+             call.setResponseCode(200, 'OK'),
              call.finish()])
 
         self.assert_calls_equal(
             self.m_handle_event,
-            [call('ping', self.pingmessage)])
+            [call('a fake unique id', 'ping', self.pingmessage)])
 
     def test_render_POST_ping_tampered(self):
         tweakedmessage = self.pingmessage.copy()
-        tweakedmessage['id'] += 1
+        tweakedmessage['hook_id'] += 1
 
         self.m_request.content.getvalue.return_value = json.dumps(tweakedmessage)
 
@@ -92,7 +95,9 @@ class WebhookResourceTests (MockingTestCase):
 
         self.assert_calls_equal(
             self.m_request,
-            [call.setResponseCode(403, 'FORBIDDEN'),
+            [call.getHeader('X-Hub-Signature'),
+             call.content.getvalue(),
+             call.setResponseCode(403, 'FORBIDDEN'),
              call.finish()])
 
 
@@ -130,7 +135,7 @@ class SignatureVerifierTests (unittest.TestCase):
         # Note: We verify this private method because we want to bypass
         # the time-invariant comparison layer (and we don't want to
         # mock here):
-        sig = self.sigver._calculate_hmacsha1(XHubSignatureTestVector.body)
+        sig = 'sha1-' + self.sigver._calculate_hmacsha1(XHubSignatureTestVector.body)
         self.assertEqual(XHubSignatureTestVector.expectedsig, sig)
 
 
@@ -143,6 +148,6 @@ class XHubSignatureTestVector (object):
 
     body='{"zen":"Keep it logically awesome.","hook":{"url":"https://api.github.com/repos/nejucomo/leastbot/hooks/2483695","test_url":"https://api.github.com/repos/nejucomo/leastbot/hooks/2483695/test","id":2483695,"name":"web","active":true,"events":["*"],"config":{"secret":"abc","url":"http://con.struc.tv:12388/foo","content_type":"json","insecure_ssl":"0"},"last_response":{"code":null,"status":"unused","message":null},"updated_at":"2014-06-26T00:34:21Z","created_at":"2014-06-26T00:34:21Z"},"hook_id":2483695}'
 
-    expectedsig='91bc104310ed46d5633a249e0240dd98a37435cf'
+    expectedsig='sha1-91bc104310ed46d5633a249e0240dd98a37435cf'
 
 

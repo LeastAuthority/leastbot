@@ -1,3 +1,4 @@
+import json
 import hmac
 import hashlib
 
@@ -6,13 +7,36 @@ from twisted.web import resource
 
 
 class WebhookResource (resource.Resource):
-    def __init__(self, handle_event):
+    def __init__(self, sharedsecret, handle_event):
         resource.Resource.__init__(self)
+        self._verify_signature = SignatureVerifier(sharedsecret)
         self._handle_event = handle_event
 
     def render_GET(self, request):
         request.setResponseCode(403, 'FORBIDDEN')
         request.finish()
+
+    def render_POST(self, request):
+        allegedsig = request.getHeader('X-Hub-Signature')
+        body = request.content.getvalue()
+
+        if self._verify_signature(allegedsig, body):
+            self._handle_signed_message(request, body)
+            request.setResponseCode(200, 'OK')
+        else:
+            request.setResponseCode(403, 'FORBIDDEN')
+        request.finish()
+
+    def _handle_signed_message(self, request, body):
+        eventname = request.getHeader('X-Github-Event')
+        eventid = request.getHeader('X-Github-Delivery')
+        try:
+            message = json.loads(body)
+        except ValueError:
+            self._errorResponse()
+            return
+        else:
+            self._handle_event(eventid, eventname, message)
 
 
 class SignatureVerifier (object):
@@ -20,7 +44,7 @@ class SignatureVerifier (object):
         self._sharedsecret = sharedsecret
 
     def __call__(self, allegedsig, message):
-        expectedsig = self._calculate_hmacsha1(message)
+        expectedsig = 'sha1-' + self._calculate_hmacsha1(message)
         return constant_time_compare(allegedsig, expectedsig)
 
     def _calculate_hmacsha1(self, body):
