@@ -8,6 +8,8 @@ from twisted.web.server import NOT_DONE_YET
 
 
 class WebhookResource (resource.Resource):
+    isLeaf = True
+
     def __init__(self, sharedsecret, handle_event):
         resource.Resource.__init__(self)
         self._verify_signature = SignatureVerifier(sharedsecret)
