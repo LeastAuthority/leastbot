@@ -101,13 +101,40 @@ class WebhookResourceTests (MockingTestCase):
 
 
 class SignatureVerifierTests (unittest.TestCase):
-    def test_hmac_vector(self):
-        sigver = github.SignatureVerifier(sharedsecret=XHubSignatureTestVector.sharedsecret)
+    def setUp(self):
+        self.sigver = github.SignatureVerifier(
+            sharedsecret=XHubSignatureTestVector.sharedsecret,
+            )
 
+    def test_vector_positive(self):
+        self.failUnless(
+            self.sigver(
+                allegedsig=XHubSignatureTestVector.expectedsig,
+                message=XHubSignatureTestVector.body,
+                ),
+            )
+
+    def test_vector_negative_tampered_sig(self):
+        self.failIf(
+            self.sigver(
+                allegedsig=XHubSignatureTestVector.expectedsig[:-1] + '8',
+                message=XHubSignatureTestVector.body,
+                ),
+            )
+
+    def test_vector_negative_tampered_body(self):
+        self.failIf(
+            self.sigver(
+                allegedsig=XHubSignatureTestVector.expectedsig,
+                message=XHubSignatureTestVector.body + ' ',
+                ),
+            )
+
+    def test_hmac_vector(self):
         # Note: We verify this private method because we want to bypass
         # the time-invariant comparison layer (and we don't want to
         # mock here):
-        sig = sigver._calculate_hmacsha1(XHubSignatureTestVector.body)
+        sig = self.sigver._calculate_hmacsha1(XHubSignatureTestVector.body)
         self.assertEqual(XHubSignatureTestVector.expectedsig, sig)
 
 

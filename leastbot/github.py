@@ -15,7 +15,6 @@ class WebhookResource (resource.Resource):
         request.finish()
 
 
-
 class SignatureVerifier (object):
     def __init__(self, sharedsecret):
         self._sharedsecret = sharedsecret
