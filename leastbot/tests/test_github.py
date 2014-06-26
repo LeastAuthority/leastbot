@@ -9,13 +9,44 @@ from leastbot import github
 
 
 class WebhookResourceTests (MockingTestCase):
+    secret = 'fake secret'
+
+    pingmessage = {
+        u'hook': {
+            u'active': True,
+            u'config': {
+                u'content_type': u'json',
+                u'insecure_ssl': u'0',
+                u'secret': secret,
+                u'url': u'http://fake_hook_url/',
+                },
+            u'created_at': u'2014-06-26T02:47:58Z',
+            u'events': [u'*'],
+            u'id': 2484169,
+            u'last_response': {
+                u'code': None,
+                u'message': None,
+                u'status': u'unused',
+                },
+            u'name': u'web',
+            u'test_url': u'https://api.github.com/repos/:FAKE_GH_ACCT:/:FAKE_REPO:/hooks/2484169/test',
+            u'updated_at': u'2014-06-26T02:47:58Z',
+            u'url': u'https://api.github.com/repos/:FAKE_GH_ACCT:/:FAKE_REPO:/hooks/2484169',
+            },
+        u'hook_id': 2484169,
+        u'zen': u'Keep it logically awesome.',
+        }
+
     def setUp(self):
         MockingTestCase.setUp(self)
 
-        self.f_secret = 'fake secret'
+        self.pingbody = json.dumps(self.pingmessage)
+        sigver = github.SignatureVerifier(self.secret)
+        self.pingexpsig = sigver._calculate_hmacsha1(self.pingbody)
+
         self.m_handle_event = self.make_mock()
         self.m_request = self.make_mock()
-        self.res = github.WebhookResource(self.f_secret, self.m_handle_event)
+        self.res = github.WebhookResource(self.secret, self.m_handle_event)
 
     def test_render_GET(self):
         self.res.render_GET(self.m_request)
@@ -30,40 +61,12 @@ class WebhookResourceTests (MockingTestCase):
              call.finish()])
 
     def test_render_POST_ping(self):
-        message = {
-            u'hook': {
-                u'active': True,
-                u'config': {
-                    u'content_type': u'json',
-                    u'insecure_ssl': u'0',
-                    u'secret': self.f_secret,
-                    u'url': u'http://fake_hook_url/',
-                    },
-                u'created_at': u'2014-06-26T02:47:58Z',
-                u'events': [u'*'],
-                u'id': 2484169,
-                u'last_response': {
-                    u'code': None,
-                    u'message': None,
-                    u'status': u'unused',
-                    },
-                u'name': u'web',
-                u'test_url': u'https://api.github.com/repos/:FAKE_GH_ACCT:/:FAKE_REPO:/hooks/2484169/test',
-                u'updated_at': u'2014-06-26T02:47:58Z',
-                u'url': u'https://api.github.com/repos/:FAKE_GH_ACCT:/:FAKE_REPO:/hooks/2484169',
-                },
-            u'hook_id': 2484169,
-            u'zen': u'Keep it logically awesome.',
-            }
-
-        body = json.dumps(message)
-        sigver = github.SignatureVerifier(self.f_secret)
-        expsig = sigver._calculate_hmacsha1(body)
+        self.m_request.content.getvalue.return_value = self.pingbody
 
         self.m_request.requestHeaders = {
             'X-Github-Event': 'ping',
             'X-Github-Delivery': 'a fake unique id',
-            'X-Hub-Signature': 'sha1-' + expsig,
+            'X-Hub-Signature': 'sha1-' + self.expsig,
             }
 
         self.res.render_POST(self.m_request)
@@ -75,7 +78,26 @@ class WebhookResourceTests (MockingTestCase):
 
         self.assert_calls_equal(
             self.m_handle_event,
-            [('ping', message)])
+            [call('ping', self.pingmessage)])
+
+    def test_render_POST_ping_tampered(self):
+        tweakedmessage = self.pingmessage.copy()
+        tweakedmessage['id'] += 1
+
+        self.m_request.content.getvalue.return_value = json.dumps(tweakedmessage)
+
+        self.m_request.requestHeaders = {
+            'X-Github-Event': 'ping',
+            'X-Github-Delivery': 'a fake unique id',
+            'X-Hub-Signature': 'sha1-' + self.expsig,
+            }
+
+        self.res.render_POST(self.m_request)
+
+        self.assert_calls_equal(
+            self.m_request,
+            [call.setResponseCode(403, 'FORBIDDEN'),
+             call.finish()])
 
 
 class SignatureVerifierTests (unittest.TestCase):
