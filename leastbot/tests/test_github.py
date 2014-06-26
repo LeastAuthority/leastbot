@@ -1,6 +1,7 @@
 import json
 
 from twisted.trial import unittest
+from twisted.web.server import NOT_DONE_YET
 from mock import call
 
 from leastbot.tests.mockutil import MockingTestCase
@@ -58,8 +59,9 @@ class WebhookResourceTests (MockingTestCase):
         self.res = github.WebhookResource(self.secret, self.m_handle_event)
 
     def test_render_GET(self):
-        self.res.render_GET(self.m_request)
+        r = self.res.render_GET(self.m_request)
 
+        self.assertEqual(NOT_DONE_YET, r)
         self.assert_calls_equal(
             self.m_handle_event,
             [])
@@ -70,8 +72,9 @@ class WebhookResourceTests (MockingTestCase):
              call.finish()])
 
     def test_render_POST_ping(self):
-        self.res.render_POST(self.m_request)
+        r = self.res.render_POST(self.m_request)
 
+        self.assertEqual(NOT_DONE_YET, r)
         self.assert_calls_equal(
             self.m_request,
             [call.getHeader('X-Hub-Signature'),
@@ -91,8 +94,9 @@ class WebhookResourceTests (MockingTestCase):
 
         self.m_request.content.getvalue.return_value = json.dumps(tweakedmessage)
 
-        self.res.render_POST(self.m_request)
+        r = self.res.render_POST(self.m_request)
 
+        self.assertEqual(NOT_DONE_YET, r)
         self.assert_calls_equal(
             self.m_request,
             [call.getHeader('X-Hub-Signature'),
