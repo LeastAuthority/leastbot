@@ -3,6 +3,7 @@ import hmac
 import hashlib
 
 from twisted.web import resource
+from twisted.web.server import NOT_DONE_YET
 
 
 
@@ -15,6 +16,7 @@ class WebhookResource (resource.Resource):
     def render_GET(self, request):
         request.setResponseCode(403, 'FORBIDDEN')
         request.finish()
+        return NOT_DONE_YET
 
     def render_POST(self, request):
         allegedsig = request.getHeader('X-Hub-Signature')
@@ -22,10 +24,10 @@ class WebhookResource (resource.Resource):
 
         if self._verify_signature(allegedsig, body):
             self._handle_signed_message(request, body)
-            request.setResponseCode(200, 'OK')
         else:
             request.setResponseCode(403, 'FORBIDDEN')
         request.finish()
+        return NOT_DONE_YET
 
     def _handle_signed_message(self, request, body):
         eventname = request.getHeader('X-Github-Event')
@@ -33,10 +35,10 @@ class WebhookResource (resource.Resource):
         try:
             message = json.loads(body)
         except ValueError:
-            self._errorResponse()
-            return
+            request.setResponseCode(400, 'MALFORMED')
         else:
             self._handle_event(eventid, eventname, message)
+            request.setResponseCode(200, 'OK')
 
 
 class SignatureVerifier (object):
