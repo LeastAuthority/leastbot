@@ -45,3 +45,19 @@ class MockingTestCase (unittest.TestCase):
             except Exception, e:
                 e.args += ('Internal unittesting exception; vars:', i, mockcall, expectedcall)
                 raise
+
+
+class EqCallback (object):
+    """I am useful for making assert_calls_equal checks which are more flexible than standard ==."""
+    def __init__(self, eqcb, repstr):
+        self._eqcb = eqcb
+        self._repstr = repstr
+
+    def __eq__(self, other):
+        return self._eqcb(other)
+
+    def __repr__(self):
+        return self._repstr
+
+
+ArgIsType = lambda T: EqCallback(lambda v: isinstance(v, T), 'ArgIsEqual(%s)' % (T.__name__,))
