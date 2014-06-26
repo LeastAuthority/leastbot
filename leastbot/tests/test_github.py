@@ -1,6 +1,6 @@
 import unittest
 
-from leastbot.github.hubsig import SignatureVerifier
+from leastbot.github import SignatureVerifier
 
 
 class SignatureVerifierTests (unittest.TestCase):
