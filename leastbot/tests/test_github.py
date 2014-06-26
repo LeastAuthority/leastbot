@@ -1,5 +1,5 @@
 from twisted.trial import unittest
-from mock import ANY, call
+from mock import call
 
 from leastbot.tests.mockutil import MockingTestCase
 from leastbot import github
@@ -11,7 +11,7 @@ class WebhookResourceTests (MockingTestCase):
         m_handle_event = self.make_mock()
         m_request = self.make_mock()
 
-        res = github.WebHookResource(m_handle_event)
+        res = github.WebhookResource(m_handle_event)
         res.render_GET(m_request)
 
         self.assert_calls_equal(
@@ -20,8 +20,7 @@ class WebhookResourceTests (MockingTestCase):
 
         self.assert_calls_equal(
             m_request,
-            [call.setResponseCode(403),
-             call.write(ANY),
+            [call.setResponseCode(403, 'FORBIDDEN'),
              call.finish()])
 
 
