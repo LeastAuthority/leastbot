@@ -1,3 +1,4 @@
+import sys
 import pprint
 
 from twisted.internet import reactor
@@ -6,7 +7,7 @@ from leastbot import webserver
 
 
 
-def main(args, reactor=reactor):
+def main(args=sys.argv[1:], reactor=reactor):
 
     def handle_event(*a, **kw):
         print 'unhandled event:'
