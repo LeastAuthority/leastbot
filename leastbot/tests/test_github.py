@@ -58,6 +58,9 @@ class WebhookResourceTests (MockingTestCase):
 
         self.res = github.WebhookResource(self.secret, self.m_handle_event)
 
+    def test_isLeaf_resource(self):
+        self.assertEqual(True, github.WebhookResource.isLeaf)
+
     def test_render_GET(self):
         r = self.res.render_GET(self.m_request)
 
