@@ -17,7 +17,7 @@ An IRC bot written during Least Authority Fun Fridays.
 
 def main(args=sys.argv[1:], reactor=reactor):
     opts = parse_args(args)
-    _init_logging(opts)
+    init_logging(getattr(logging, opts.loglevel))
 
     def handle_event(*a, **kw):
         print 'unhandled event:'
@@ -48,12 +48,12 @@ def parse_args(args):
 LogFormat = '%(asctime)s %(levelname) 5s %(name)s | %(message)s'
 DateFormat = '%Y-%m-%dT%H:%M:%S%z'
 
-def _init_logging(opts):
+def init_logging(level):
     logging.basicConfig(
         stream=sys.stdout,
         format=LogFormat,
         datefmt=DateFormat,
-        level=getattr(logging, opts.loglevel))
+        level=level)
 
     log.PythonLoggingObserver().start()
 
