@@ -9,7 +9,7 @@ class Client (LogMixin):
         self._reactor = reactor
         self._host = host
         self._port = port
-        self._factory = ClientFactory(nick, password, channel)
+        self._factory = ClientProtocolFactory(nick, password, channel)
 
     def connect(self):
         self._log.info('Connecting to %s:%d...', self._host, self._port)
@@ -17,7 +17,7 @@ class Client (LogMixin):
         self._reactor.connectSSL(self._host, self._port, self._factory, sslctx)
 
 
-class ClientFactory (protocol.ClientFactory):
+class ClientProtocolFactory (protocol.ClientFactory):
     def __init__(self, nick, password, channel):
         self._nick = nick
         self._password = password

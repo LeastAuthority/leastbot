@@ -33,7 +33,7 @@ class ClientTests (LogMockingTestCase):
             [call.connectSSL(
                     host,
                     port,
-                    ArgIsType(irc.ClientFactory),
+                    ArgIsType(irc.ClientProtocolFactory),
                     ArgIsType(ssl.ClientContextFactory))])
 
         def check_record_arg(rec):
