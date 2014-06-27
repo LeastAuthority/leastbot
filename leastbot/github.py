@@ -55,7 +55,7 @@ class SignatureVerifier (object):
         self._sharedsecret = sharedsecret
 
     def __call__(self, allegedsig, message):
-        expectedsig = 'sha1-' + self._calculate_hmacsha1(message)
+        expectedsig = 'sha1=' + self._calculate_hmacsha1(message)
         return constant_time_compare(allegedsig, expectedsig)
 
     def _calculate_hmacsha1(self, body):
