@@ -20,8 +20,7 @@ def main(args=sys.argv[1:], reactor=reactor):
     init_logging(getattr(logging, opts.loglevel))
 
     def handle_event(*a, **kw):
-        print 'unhandled event:'
-        pprint.pprint(a, kw)
+        pprint.pprint(('unhandled event:', a, kw))
 
     badsecret = 'abc'
     s = webserver.WebServer(reactor, badsecret, handle_event)
