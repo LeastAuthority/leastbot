@@ -5,26 +5,20 @@ import mock
 
 class MockingTestCase (unittest.TestCase):
     def setUp(self):
-        self._patchers = []
-
-    def tearDown(self):
-        for (p, _) in self._patchers:
-            if p is not None:
-                p.stop()
+        self._mockset = []
 
     def patch(self, name):
         p = mock.patch(name)
-        mockobj = p.start()
-        self._patchers.append( (p, mockobj) )
-        return mockobj
+        self.addCleanup(p.stop)
+        return p.start()
 
     def make_mock(self):
-        mockobj = mock.MagicMock()
-        self._patchers.append( (None, mockobj) )
-        return mockobj
+        m = mock.MagicMock()
+        self._mockset.append(m)
+        return m
 
     def reset_mocks(self):
-        for (_, m) in self._patchers:
+        for m in self._mockset:
             m.reset_mock()
 
     def assert_calls_equal(self, mockobj, expectedcalls):
