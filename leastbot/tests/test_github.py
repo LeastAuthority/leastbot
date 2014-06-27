@@ -4,12 +4,12 @@ from twisted.trial import unittest
 from twisted.web.server import NOT_DONE_YET
 from mock import call
 
-from leastbot.tests.mockutil import MockingTestCase
+from leastbot.tests.logutil import LogMockingTestCase
 from leastbot import github
 
 
 
-class WebhookResourceTests (MockingTestCase):
+class WebhookResourceTests (LogMockingTestCase):
     secret = 'fake secret'
 
     pingmessage = {
@@ -39,7 +39,7 @@ class WebhookResourceTests (MockingTestCase):
         }
 
     def setUp(self):
-        MockingTestCase.setUp(self)
+        LogMockingTestCase.setUp(self)
 
         self.pingbody = json.dumps(self.pingmessage)
         sigver = github.SignatureVerifier(self.secret)

@@ -13,3 +13,6 @@ class LogMockingTestCase (MockingTestCase):
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
         root.addHandler(self.m_loghandler)
+
+    def tearDown(self):
+        logging.getLogger().removeHandler(self.m_loghandler)
