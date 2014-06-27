@@ -26,14 +26,14 @@ class WebhookResource (LogMixin, resource.Resource):
     def render_POST(self, request):
         allegedsig = request.getHeader('X-Hub-Signature')
         body = request.content.getvalue()
-        self._log.debug(
-            'render_POST - allegedsig %r; body %r...',
-            allegedsig,
-            body)
 
         if self._verify_signature(allegedsig, body):
             self._handle_signed_message(request, body)
         else:
+            self._log.warn(
+                'render_POST signature mismatch 403 - allegedsig %r; body %r...',
+                allegedsig,
+                body)
             request.setResponseCode(403, 'FORBIDDEN')
         request.finish()
         return NOT_DONE_YET
