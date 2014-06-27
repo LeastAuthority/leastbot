@@ -1,22 +1,11 @@
-import logging
-
 from mock import call
 
 from leastbot.log import LogMixin
-from leastbot.tests.mockutil import MockingTestCase, EqCallback
+from leastbot.tests.mockutil import EqCallback
+from leastbot.tests.logutil import LogMockingTestCase
 
 
-class LogMixinTests (MockingTestCase):
-    def setUp(self):
-        MockingTestCase.setUp(self)
-
-        self.m_handler = self.make_mock()
-        self.m_handler.level = logging.DEBUG
-
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-        root.addHandler(self.m_handler)
-
+class LogMixinTests (LogMockingTestCase):
     def test_LogMixin_subclass_nameless(self):
 
         class MyClass (LogMixin):
@@ -31,6 +20,6 @@ class LogMixinTests (MockingTestCase):
             return rec.msg == 'created'
 
         self.assert_calls_equal(
-            self.m_handler,
+            self.m_loghandler,
             [call.handle(EqCallback(check_record_arg))])
 
