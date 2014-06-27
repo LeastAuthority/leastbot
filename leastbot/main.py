@@ -37,7 +37,7 @@ def parse_args(args):
 
     p.add_argument('--log-level',
                    dest='loglevel',
-                   default='INFO',
+                   default='DEBUG',
                    choices=['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
                    help='Set logging level.')
 

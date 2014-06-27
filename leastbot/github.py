@@ -5,13 +5,16 @@ import hashlib
 from twisted.web import resource
 from twisted.web.server import NOT_DONE_YET
 
+from leastbot.log import LogMixin
 
 
-class WebhookResource (resource.Resource):
+
+class WebhookResource (LogMixin, resource.Resource):
     isLeaf = True
 
     def __init__(self, sharedsecret, handle_event):
         resource.Resource.__init__(self)
+        self._init_log()
         self._verify_signature = SignatureVerifier(sharedsecret)
         self._handle_event = handle_event
 
@@ -23,6 +26,10 @@ class WebhookResource (resource.Resource):
     def render_POST(self, request):
         allegedsig = request.getHeader('X-Hub-Signature')
         body = request.content.getvalue()
+        self._log.debug(
+            'render_POST - allegedsig %r; body %s...',
+            allegedsig,
+            repr(body)[:256])
 
         if self._verify_signature(allegedsig, body):
             self._handle_signed_message(request, body)
