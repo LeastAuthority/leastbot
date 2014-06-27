@@ -50,16 +50,13 @@ class WebhookResource (LogMixin, resource.Resource):
             request.setResponseCode(200, 'OK')
 
 
-class SignatureVerifier (LogMixin):
+class SignatureVerifier (object):
     def __init__(self, sharedsecret):
-        LogMixin._init_log(self)
         self._sharedsecret = sharedsecret
 
     def __call__(self, allegedsig, message):
         expectedsig = 'sha1-' + self._calculate_hmacsha1(message)
-        result = constant_time_compare(allegedsig, expectedsig)
-        self._log.debug('expectedsig %r == allegedsig %r ? %r', expectedsig, allegedsig, result)
-        return result
+        return constant_time_compare(allegedsig, expectedsig)
 
     def _calculate_hmacsha1(self, body):
         m = hmac.HMAC(key=self._sharedsecret, msg=body, digestmod=hashlib.sha1)
