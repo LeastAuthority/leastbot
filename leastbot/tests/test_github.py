@@ -1,6 +1,5 @@
 import json
 
-from twisted.trial import unittest
 from twisted.web.server import NOT_DONE_YET
 from mock import call
 
@@ -108,8 +107,10 @@ class WebhookResourceTests (LogMockingTestCase):
              call.finish()])
 
 
-class SignatureVerifierTests (unittest.TestCase):
+class SignatureVerifierTests (LogMockingTestCase):
     def setUp(self):
+        LogMockingTestCase.setUp(self)
+
         self.sigver = github.SignatureVerifier(
             sharedsecret=XHubSignatureTestVector.sharedsecret,
             )

@@ -27,9 +27,9 @@ class WebhookResource (LogMixin, resource.Resource):
         allegedsig = request.getHeader('X-Hub-Signature')
         body = request.content.getvalue()
         self._log.debug(
-            'render_POST - allegedsig %r; body %s...',
+            'render_POST - allegedsig %r; body %r...',
             allegedsig,
-            repr(body)[:256])
+            body)
 
         if self._verify_signature(allegedsig, body):
             self._handle_signed_message(request, body)
@@ -50,13 +50,16 @@ class WebhookResource (LogMixin, resource.Resource):
             request.setResponseCode(200, 'OK')
 
 
-class SignatureVerifier (object):
+class SignatureVerifier (LogMixin):
     def __init__(self, sharedsecret):
+        LogMixin._init_log(self)
         self._sharedsecret = sharedsecret
 
     def __call__(self, allegedsig, message):
         expectedsig = 'sha1-' + self._calculate_hmacsha1(message)
-        return constant_time_compare(allegedsig, expectedsig)
+        result = constant_time_compare(allegedsig, expectedsig)
+        self._log.debug('expectedsig %r == allegedsig %r ? %r', expectedsig, allegedsig, result)
+        return result
 
     def _calculate_hmacsha1(self, body):
         m = hmac.HMAC(key=self._sharedsecret, msg=body, digestmod=hashlib.sha1)
