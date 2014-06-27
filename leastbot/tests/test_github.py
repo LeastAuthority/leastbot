@@ -5,6 +5,7 @@ from twisted.web.server import NOT_DONE_YET
 from mock import call
 
 from leastbot.tests.logutil import LogMockingTestCase
+from leastbot.tests.mockutil import EqCallback
 from leastbot import github
 
 
@@ -91,6 +92,10 @@ class WebhookResourceTests (LogMockingTestCase):
             self.m_handle_event,
             [call('a fake unique id', 'ping', self.pingmessage)])
 
+        self.assert_calls_equal(
+            self.m_loghandler,
+            [])
+
     def test_render_POST_ping_tampered(self):
         tweakedmessage = self.pingmessage.copy()
         tweakedmessage['hook_id'] += 1
@@ -107,6 +112,13 @@ class WebhookResourceTests (LogMockingTestCase):
              call.setResponseCode(403, 'FORBIDDEN'),
              call.finish()])
 
+        def check_record_arg(rec):
+            """<Record.levelname == 'WARNING'>"""
+            return rec.levelname == 'WARNING'
+
+        self.assert_calls_equal(
+            self.m_loghandler,
+            [call.handle(EqCallback(check_record_arg))])
 
 class SignatureVerifierTests (unittest.TestCase):
     def setUp(self):
