@@ -29,7 +29,7 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self.nickname = nick # Ugh...  base class uses a partially-side-effect-dependent API.
 
     def connectionMade(self):
-        self._log.debug('Connected.')
+        self._log.info('Connected as %r.', self.nickname)
         irc.IRCClient.connectionMade(self)
 
     def handleCommand(self, command, prefix, params):
