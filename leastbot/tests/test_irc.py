@@ -1,5 +1,3 @@
-import re
-
 from twisted.internet import ssl
 from twisted.trial import unittest
 
@@ -42,7 +40,7 @@ class ClientTests (LogMockingTestCase):
 
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(ArgIsLogRecord(msg=r'^.*Connecting.*$'))])
+            [call.handle(ArgIsLogRecord(msg='Connecting to %s:%d...'))])
 
 
 class ClientProtocolTests (LogMockingTestCase):
@@ -71,10 +69,7 @@ class ClientProtocolTests (LogMockingTestCase):
             [call.handle(
                     ArgIsLogRecord(
                         levelname='DEBUG',
-                        msg=r'^handleCommand(command=%s, prefix=%s, params=%s)' % (
-                            re.escape(command),
-                            re.escape(prefix),
-                            re.escape(repr(params)))))])
+                        msg=r'handleCommand(command=%r, prefix=%r, params=%r)'))])
 
         # Ensure we delegate to the base library:
         self.assert_calls_equal(
@@ -162,7 +157,7 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
 
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(ArgIsLogRecord(msg=r'^.*Reconnecting in.*$'))])
+            [call.handle(ArgIsLogRecord(msg='Connection %s: %r (Reconnecting in %.2f seconds.)'))])
 
         self.assert_calls_equal(
             m_reactor,

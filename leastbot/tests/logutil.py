@@ -1,4 +1,3 @@
-import re
 import logging
 
 from leastbot.tests.mockutil import MockingTestCase, EqCallback
@@ -25,27 +24,17 @@ class LogMockingTestCase (MockingTestCase):
         self.addCleanup(setattr, logging.LogRecord, '__repr__', original_repr)
 
 
-def ArgIsLogRecord(msg=None, levelname=None):
-    fields = []
-    if msg is not None:
-        fields.append('msg=%r' % (msg,))
-    if levelname is not None:
-        fields.append('levelname=%r' % (levelname,))
-    desc = 'ArgIsLogRecord(%s)' % (', '.join(fields),)
-
-    if msg is not None:
-        msg = re.compile(msg)
+def ArgIsLogRecord(**attrs):
+    desc = 'ArgIsLogRecord(%s)' % (', '.join('%s=%r' % (k,v) for (k,v) in attrs.iteritems()),)
 
     def check_arg(x):
-        # Gauntlet style: Any early return is False, only passing every test gives True:
         if not isinstance(x, logging.LogRecord):
             return False
 
-        if levelname is not None and x.levelname != levelname:
-            return False
-
-        if msg is not None and msg.match(x.msg) is None:
-            return False
+        for (name, expected) in attrs.iteritems():
+            actual = getattr(x, name)
+            if expected != actual:
+                return False
 
         return True
 
