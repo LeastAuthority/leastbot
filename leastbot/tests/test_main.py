@@ -25,7 +25,7 @@ class main_Tests (LoggingPatcherTestCase):
 
         websecret = 'abc'
         webport = 8080
-        irchost = 'irc.oftc.org'
+        irchost = 'irc.oftc.net'
         ircport = 6697
         nick = 'leastbot'
         password = '012345'
