@@ -41,7 +41,7 @@ class main_Tests (LoggingPatcherTestCase):
         self.assert_calls_equal(
             m_Client,
             [call(m_reactor, irchost, ircport, nick, password, nickserv, channel),
-             call().listen()])
+             call().connect()])
 
         self.assert_calls_equal(
             m_reactor,
