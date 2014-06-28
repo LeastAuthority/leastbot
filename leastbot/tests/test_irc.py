@@ -1,3 +1,5 @@
+import re
+
 from twisted.internet import ssl
 from twisted.trial import unittest
 
@@ -53,6 +55,31 @@ class ClientProtocolTests (LogMockingTestCase):
         self.channel = '#foo'
 
         self.p = irc.ClientProtocol(self.nick, self.password, self.nickserv, self.channel)
+
+    def test_handleCommand_debug_log(self):
+        m_ircIRCClient = self.patch('twisted.words.protocols.irc.IRCClient')
+
+        # Taken from a real world test run:
+        command='NOTICE'
+        prefix='weber.oftc.net'
+        params=['AUTH', '*** Looking up your hostname...']
+
+        self.p.handleCommand(command, prefix, params)
+
+        self.assert_calls_equal(
+            self.m_loghandler,
+            [call.handle(
+                    ArgIsLogRecord(
+                        levelname='DEBUG',
+                        msg=r'^handleCommand(command=%s, prefix=%s, params=%s)' % (
+                            re.escape(command),
+                            re.escape(prefix),
+                            re.escape(repr(params)))))])
+
+        # Ensure we delegate to the base library:
+        self.assert_calls_equal(
+            m_ircIRCClient,
+            [call.handleCommand(self.p, command, prefix, params)])
 
     def test_signedOn_triggers_nickserv_login(self):
         m_msg = self.patch('leastbot.irc.ClientProtocol.msg')
