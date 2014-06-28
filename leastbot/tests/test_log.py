@@ -1,8 +1,7 @@
 from mock import call
 
 from leastbot.log import LogMixin
-from leastbot.tests.mockutil import EqCallback
-from leastbot.tests.logutil import LogMockingTestCase
+from leastbot.tests.logutil import LogMockingTestCase, ArgIsLogRecord
 
 
 class LogMixinTests (LogMockingTestCase):
@@ -15,11 +14,7 @@ class LogMixinTests (LogMockingTestCase):
 
         MyClass()
 
-        def check_record_arg(rec):
-            """<Record.msg == 'created'>"""
-            return rec.msg == 'created'
-
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(EqCallback(check_record_arg))])
+            [call.handle(ArgIsLogRecord(msg='created'))])
 

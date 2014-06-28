@@ -3,8 +3,8 @@ from twisted.trial import unittest
 
 from mock import call
 
-from leastbot.tests.logutil import LogMockingTestCase
-from leastbot.tests.mockutil import ArgIsType, EqCallback
+from leastbot.tests.logutil import LogMockingTestCase, ArgIsLogRecord
+from leastbot.tests.mockutil import ArgIsType
 from leastbot import irc
 
 
@@ -38,13 +38,9 @@ class ClientTests (LogMockingTestCase):
                     ArgIsType(irc.ClientProtocolFactory),
                     ArgIsType(ssl.ClientContextFactory))])
 
-        def check_record_arg(rec):
-            """<Record.msg.find('Connecting') != -1>"""
-            return rec.msg.find('Connecting') != -1
-
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(EqCallback(check_record_arg))])
+            [call.handle(ArgIsLogRecord(msg=r'^.*Connecting.*$'))])
 
 
 class ClientProtocolTests (LogMockingTestCase):
@@ -139,7 +135,7 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
 
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(EqCallback(check_record_arg))])
+            [call.handle(ArgIsLogRecord(msg=r'^.*Reconnecting in.*$'))])
 
         self.assert_calls_equal(
             m_reactor,

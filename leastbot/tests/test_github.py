@@ -4,8 +4,7 @@ from twisted.trial import unittest
 from twisted.web.server import NOT_DONE_YET
 from mock import call
 
-from leastbot.tests.logutil import LogMockingTestCase
-from leastbot.tests.mockutil import EqCallback
+from leastbot.tests.logutil import LogMockingTestCase, ArgIsLogRecord
 from leastbot import github
 
 
@@ -112,13 +111,9 @@ class WebhookResourceTests (LogMockingTestCase):
              call.setResponseCode(403, 'FORBIDDEN'),
              call.finish()])
 
-        def check_record_arg(rec):
-            """<Record.levelname == 'WARNING'>"""
-            return rec.levelname == 'WARNING'
-
         self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(EqCallback(check_record_arg))])
+            [call.handle(ArgIsLogRecord(levelname='WARNING'))])
 
 class SignatureVerifierTests (unittest.TestCase):
     def setUp(self):
