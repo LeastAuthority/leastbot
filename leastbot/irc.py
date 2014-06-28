@@ -26,6 +26,8 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self._channel = channel
         self._init_log()
 
+        self.nickname = nick # Ugh...  base class uses a partially-side-effect-dependent API.
+
     def connectionMade(self):
         self._log.debug('Connected.')
         irc.IRCClient.connectionMade(self)
