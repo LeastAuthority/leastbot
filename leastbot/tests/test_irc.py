@@ -54,6 +54,11 @@ class ClientProtocolTests (LogMockingTestCase):
 
         self.p = irc.ClientProtocol(self.nick, self.password, self.nickserv, self.channel)
 
+    def test_nickname_setattr(self):
+        # The baseclass has an icky partially-mutation-based API.
+        # Ensure we set .nickname:
+        self.assertIs(self.p.nickname, self.nick)
+
     def test_handleCommand_debug_log(self):
         m_ircIRCClient = self.patch('twisted.words.protocols.irc.IRCClient')
 
