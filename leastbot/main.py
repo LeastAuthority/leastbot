@@ -20,7 +20,7 @@ def main(args=sys.argv[1:], reactor=reactor):
     opts = parse_args(args)
     init_logging(getattr(logging, opts.loglevel))
 
-    irchost = 'irc.oftc.org'
+    irchost = 'irc.oftc.net'
     ircport = 6697
     nick = 'leastbot'
     password = '012345'
