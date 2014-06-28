@@ -76,6 +76,27 @@ class ClientProtocolTests (LogMockingTestCase):
             m_ircIRCClient,
             [call.handleCommand(self.p, command, prefix, params)])
 
+    def test_msg_debug_log(self):
+        m_ircIRCClient = self.patch('twisted.words.protocols.irc.IRCClient')
+
+        to='bob'
+        msg='I like bacon!'
+
+        self.p.msg(to, msg)
+
+        self.assert_calls_equal(
+            self.m_loghandler,
+            [call.handle(
+                    ArgIsLogRecord(
+                        levelname='DEBUG',
+                        msg=r'msg(user=%r, message=%r)'))])
+
+        # Ensure we delegate to the base library:
+        self.assert_calls_equal(
+            m_ircIRCClient,
+            [call.msg(self.p, to, msg)])
+
+
     def test_signedOn_triggers_nickserv_login(self):
         m_msg = self.patch('leastbot.irc.ClientProtocol.msg')
 
