@@ -5,12 +5,12 @@ from leastbot.log import LogMixin
 
 
 class Client (LogMixin):
-    def __init__(self, reactor, host, port, nick, password, channel):
+    def __init__(self, reactor, host, port, nick, password, nickserv, channel):
         self._init_log()
         self._reactor = reactor
         self._host = host
         self._port = port
-        self._factory = ClientProtocolFactory(reactor, nick, password, channel)
+        self._factory = ClientProtocolFactory(reactor, nick, password, nickserv, channel)
 
     def connect(self):
         self._log.info('Connecting to %s:%d...', self._host, self._port)
@@ -18,25 +18,35 @@ class Client (LogMixin):
         self._reactor.connectSSL(self._host, self._port, self._factory, sslctx)
 
 
-class ClientProtocol (irc.IRCClient):
-    pass
+class ClientProtocol (LogMixin, irc.IRCClient):
+    def __init__(self, nick, password, nickserv, channel):
+        self._nick = nick
+        self._password = password
+        self._nickserv = nickserv
+        self._channel = channel
+        self._init_log()
+
+    def connectionMade(self):
+        irc.IRCClient.connectionMade(self)
 
 
 class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
 
     protocol = ClientProtocol
 
-    def __init__(self, reactor, nick, password, channel):
+    def __init__(self, reactor, nick, password, nickserv, channel):
         self._reactor = reactor
         self._nick = nick
         self._password = password
+        self._nickserv = nickserv
         self._channel = channel
         self._delaytracker = BackoffDelayTracker()
         self._init_log()
 
     def buildProtocol(self, addr):
+        """overrides protocol.ClientFactory.buildProtocol."""
         self._delaytracker.reset()
-        return protocol.ClientFactory.buildProtocol(self, addr)
+        return self.protocol(self._nick, self._password, self._nickserv, self._channel)
 
     def clientConnectionFailed(self, connector, reason):
         self._reconnect_with_backoff(connector, 'failed', reason)

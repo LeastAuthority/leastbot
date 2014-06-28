@@ -18,10 +18,11 @@ class ClientTests (LogMockingTestCase):
         port = 6697
         nick = 'leastbot'
         password = 'blah'
+        nickserv = 'ickservnay'
         channel = '#foo'
         m_reactor = self.make_mock()
 
-        client = irc.Client(m_reactor, host, port, nick, password, channel)
+        client = irc.Client(m_reactor, host, port, nick, password, nickserv, channel)
 
         self.assert_calls_equal(
             m_reactor,
@@ -46,6 +47,38 @@ class ClientTests (LogMockingTestCase):
             [call.handle(EqCallback(check_record_arg))])
 
 
+class ClientProtocolTests (LogMockingTestCase):
+    def setUp(self):
+        LogMockingTestCase.setUp(self)
+
+        self.nick = 'Nick'
+        self.password = 'a password'
+        self.nickserv = 'nickserv'
+        self.channel = '#foo'
+
+        self.p = irc.ClientProtocol(self.nick, self.password, self.nickserv, self.channel)
+
+    def test_signedOn_triggers_nickserv_login(self):
+        m_msg = self.patch('leastbot.irc.ClientProtocol.msg')
+
+        self.p.signedOn()
+
+        self.assert_calls_equal(
+            m_msg,
+            [call(self.nickserv, 'identify %s' % (self.password,))])
+
+    def test_privmsg_nickserv_login_success_triggers_channel_join(self):
+        # (notice) You are successfully identified as ${NICK}.
+        m_join = self.patch('leastbot.irc.ClientProtocol.join')
+
+        loginmsg = '(notice) You are successfully identified as %s.' % (self.nick,)
+        self.p.privmsg(self.nickserv, '!!! FIXME What should this channel parameter be? !!!', loginmsg)
+
+        self.assert_calls_equal(
+            m_join,
+            [call(self.nickserv, 'identify %s' % (self.password,))])
+
+
 class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_protocol_is_irc_ClientProtocol(self):
         self.assertIs(irc.ClientProtocol, irc.ClientProtocolFactory.protocol)
@@ -53,10 +86,11 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_buildProtocol_resets_backoff_counter(self):
         nick = 'leastbot'
         password = 'blah'
+        nickserv = 'the-nickserv-user'
         channel = '#foo'
         m_reactor = self.make_mock()
 
-        f = irc.ClientProtocolFactory(m_reactor, nick, password, channel)
+        f = irc.ClientProtocolFactory(m_reactor, nick, password, nickserv, channel)
 
         # Violate the interface abstraction to verify backoff behavior:
         m_delaytracker = self.make_mock()
@@ -77,10 +111,11 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
     def _check_reconnects_with_backoff(self, methodname):
         nick = 'leastbot'
         password = 'blah'
+        nickserv = 'the-nickserv-user'
         channel = '#foo'
         m_reactor = self.make_mock()
 
-        f = irc.ClientProtocolFactory(m_reactor, nick, password, channel)
+        f = irc.ClientProtocolFactory(m_reactor, nick, password, nickserv, channel)
 
         # Violate the interface abstraction to verify backoff behavior:
         m_delaytracker = self.make_mock()
