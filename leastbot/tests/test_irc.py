@@ -116,11 +116,11 @@ class ClientProtocolTests (LogMockingTestCase):
         m_join = self.patch('leastbot.irc.ClientProtocol.join')
 
         loginmsg = '(notice) You are successfully identified as %s.' % (self.nick,)
-        self.p.privmsg(self.nickserv, '!!! FIXME What should this channel parameter be? !!!', loginmsg)
+        self.p.privmsg(self.nickserv, None, loginmsg)
 
         self.assert_calls_equal(
             m_join,
-            [call(self.nickserv, 'identify %s' % (self.password,))])
+            [call(self.channel)])
 
 
 class ClientProtocolFactoryTests (LogMockingTestCase):

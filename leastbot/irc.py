@@ -28,10 +28,7 @@ class ClientProtocol (LogMixin, irc.IRCClient):
 
         self.nickname = nick # Ugh...  base class uses a partially-side-effect-dependent API.
 
-    def connectionMade(self):
-        self._log.info('Connected as %r.', self.nickname)
-        irc.IRCClient.connectionMade(self)
-
+    # Logging passthrough layer:
     def handleCommand(self, command, prefix, params):
         self._log.debug('handleCommand(command=%r, prefix=%r, params=%r)', command, prefix, params)
         irc.IRCClient.handleCommand(self, command, prefix, params)
@@ -39,6 +36,27 @@ class ClientProtocol (LogMixin, irc.IRCClient):
     def msg(self, user, message):
         self._log.debug('msg(user=%r, message=%r)', user, message)
         irc.IRCClient.msg(self, user, message)
+
+    # Logging event responders:
+    def connectionMade(self):
+        self._log.info('Connected as %r.', self.nickname)
+        irc.IRCClient.connectionMade(self)
+
+    def signedOn(self):
+        self.msg(self._nickserv, 'identify %s' % (self._password,))
+
+    def privmsg(self, user, channel, message):
+        if user == self._nickserv and channel is None:
+            if message == '(notice) You are successfully identified as %s.' % (self._nick,):
+                self._log.info(
+                    'Successfully authenticated with %r; joining %r',
+                    self._nickserv,
+                    self._channel)
+                self.join(self._channel)
+                return
+
+        # Temporary hack for interactive testing:
+        self._log.warning('Unexpected privmsg: user=%r, channel=%r, message=%r', user, channel, message)
 
 
 class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
