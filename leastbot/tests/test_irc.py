@@ -50,7 +50,7 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_protocol_is_irc_ClientProtocol(self):
         self.assertIs(irc.ClientProtocol, irc.ClientProtocolFactory.protocol)
 
-    def test_buildProtocl_resets_backoff_counter(self):
+    def test_buildProtocol_resets_backoff_counter(self):
         nick = 'leastbot'
         password = 'blah'
         channel = '#foo'
@@ -62,7 +62,9 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
         m_delaytracker = self.make_mock()
         f._delaytracker = m_delaytracker # Overwrite the extant one.
 
-        f.buildProtocol()
+        m_addr = self.make_mock()
+
+        f.buildProtocol(m_addr)
 
         self.assert_calls_equal(m_delaytracker, [call.reset()])
 
