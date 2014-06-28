@@ -39,14 +39,14 @@ class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
         return protocol.ClientFactory.buildProtocol(self, addr)
 
     def clientConnectionFailed(self, connector, reason):
-        self._reconnect_with_backoff(connector)
+        self._reconnect_with_backoff(connector, 'failed', reason)
 
     def clientConnectionLost(self, connector, reason):
-        self._reconnect_with_backoff(connector)
+        self._reconnect_with_backoff(connector, 'lost', reason)
 
-    def _reconnect_with_backoff(self, connector):
+    def _reconnect_with_backoff(self, connector, event, reason):
         delay = self._delaytracker.increment()
-        self._log.info('Reconnecting in %.2f seconds.', delay)
+        self._log.info('Connection %s: %r (Reconnecting in %.2f seconds.)', event, reason, delay)
         self._reactor.callLater(delay, connector.connect)
 
 
