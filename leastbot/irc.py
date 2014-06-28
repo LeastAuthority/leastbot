@@ -27,7 +27,13 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self._init_log()
 
     def connectionMade(self):
+        self._log.debug('Connected.')
         irc.IRCClient.connectionMade(self)
+
+    def handleCommand(self, command, prefix, params):
+        """overrides irc.IRCClient.handleCommand to debug log then delegate."""
+        self._log.debug('handleCommand(command=%r, prefix=%r, params=%r)', command, prefix, params)
+        irc.IRCClient.handleCommand(command, prefix, params)
 
 
 class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
