@@ -17,8 +17,22 @@ class LogMockingTestCase (MockingTestCase):
 
         self.addCleanup(root.removeHandler, self.m_loghandler)
 
+        # A monkeypatch hack to improve the diagnostic utility of
+        # LogRecord mismatches in test failures:
+        original_repr = logging.LogRecord.__repr__
+        logging.LogRecord.__repr__ = logging.LogRecord.__str__
+
+        self.addCleanup(setattr, logging.LogRecord, '__repr__', original_repr)
+
 
 def ArgIsLogRecord(msg=None, levelname=None):
+    fields = []
+    if msg is not None:
+        fields.append('msg=%r' % (msg,))
+    if levelname is not None:
+        fields.append('levelname=%r' % (levelname,))
+    desc = 'ArgIsLogRecord(%s)' % (', '.join(fields),)
+
     if msg is not None:
         msg = re.compile(msg)
 
@@ -34,7 +48,5 @@ def ArgIsLogRecord(msg=None, levelname=None):
             return False
 
         return True
-
-    desc = 'ArgIsLogRecord()'
 
     return EqCallback(check_arg, desc)
