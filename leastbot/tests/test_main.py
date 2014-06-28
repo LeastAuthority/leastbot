@@ -16,19 +16,32 @@ class LoggingPatcherTestCase (MockingTestCase):
 
 
 class main_Tests (LoggingPatcherTestCase):
-    def test_main_twisted_setup(self):
+    def test_main_no_args(self):
         m_reactor = self.make_mock()
+        m_Client = self.patch('leastbot.irc.Client')
         m_WebServer = self.patch('leastbot.webserver.WebServer')
 
         main(args=[], reactor=m_reactor)
 
-        expectedsecret = 'abc'
-        expectedport = 8080
+        websecret = 'abc'
+        webport = 8080
+        irchost = 'irc.oftc.org'
+        ircport = 6697
+        nick = 'leastbot'
+        password = '012345'
+        nickserv = 'nickserv'
+        channel = '#leastbot-test'
+
 
         self.assert_calls_equal(
             m_WebServer,
-            [call(m_reactor, expectedsecret, ArgIsType(FunctionType)),
-             call().listen(expectedport)])
+            [call(m_reactor, websecret, ArgIsType(FunctionType)),
+             call().listen(webport)])
+
+        self.assert_calls_equal(
+            m_Client,
+            [call(m_reactor, irchost, ircport, nick, password, nickserv, channel),
+             call().listen()])
 
         self.assert_calls_equal(
             m_reactor,
