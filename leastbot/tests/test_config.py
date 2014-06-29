@@ -10,19 +10,17 @@ class ConfigTests (LogMockingTestCase):
     def setUp(self):
         LogMockingTestCase.setUp(self)
 
-        self.m_basedir = self.make_mock()
+        self.m_configdir = self.make_mock()
         self.m_secretpath = self.make_mock()
         self.m_publicpath = self.make_mock()
 
         self.m_configdir.child.side_effect = {
             'secret.conf': self.m_secretpath,
             'public.conf': self.m_publicpath,
-            }
-
-        self.c = config.Config(self.m_basedir)
+            }.__getitem__
 
     def _load(self):
-        return config.Config.load(self.m_basedir)
+        return config.load(self.m_configdir)
 
     def test_load_missing_secret_file_raises_SystemExit(self):
         self.m_secretpath.open.side_effect = IOError_ENOENT
