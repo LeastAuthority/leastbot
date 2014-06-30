@@ -20,13 +20,13 @@ class Client (LogMixin):
 
 class ClientProtocol (LogMixin, irc.IRCClient):
     def __init__(self, nick, password, nickserv, channel):
-        self._nick = nick
+        self.nickname = nick # NOTE: base class uses a partially-side-effect-dependent API.
         self._password = password
         self._nickserv = nickserv
         self._channel = channel
         self._init_log()
 
-        self.nickname = nick # Ugh...  base class uses a partially-side-effect-dependent API.
+        self._nickservloginsuccess = 'You are successfully identified as \x02%s\x02.' % (self.nickname,)
 
     # Logging passthrough layer:
     def handleCommand(self, command, prefix, params):
@@ -45,18 +45,16 @@ class ClientProtocol (LogMixin, irc.IRCClient):
     def signedOn(self):
         self.msg(self._nickserv, 'identify %s' % (self._password,))
 
-    def privmsg(self, user, channel, message):
-        if user == self._nickserv and channel is None:
-            if message == 'You are successfully identified as \x02%s\x02.' % (self._nick,):
-                self._log.info(
-                    'Successfully authenticated with %r; joining %r',
-                    self._nickserv,
-                    self._channel)
-                self.join(self._channel)
-                return
+    def noticed(self, user, channel, message):
+        self._log.debug('Does user %r == self._nickserv %r ? %r', user, self._nickserv, user == self._nickserv)
 
-        # Temporary hack for interactive testing:
-        self._log.warning('Unexpected privmsg: user=%r, channel=%r, message=%r', user, channel, message)
+        if (user, channel, message) == (self._nickserv, self.nickname, self._nickservloginsuccess):
+            self._log.info(
+                'Successfully authenticated with %r; joining %r',
+                self._nickserv,
+                self._channel)
+            self.join(self._channel)
+            return
 
 
 class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
