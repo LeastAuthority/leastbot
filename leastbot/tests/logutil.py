@@ -1,6 +1,6 @@
 import logging
 
-from leastbot.tests.mockutil import MockingTestCase, EqCallback
+from leastbot.tests.mockutil import MockingTestCase, ArgIsTypeWithAttrs
 
 
 class LogMockingTestCase (MockingTestCase):
@@ -25,17 +25,4 @@ class LogMockingTestCase (MockingTestCase):
 
 
 def ArgIsLogRecord(**attrs):
-    desc = 'ArgIsLogRecord(%s)' % (', '.join('%s=%r' % (k,v) for (k,v) in attrs.iteritems()),)
-
-    def check_arg(x):
-        if not isinstance(x, logging.LogRecord):
-            return False
-
-        for (name, expected) in attrs.iteritems():
-            actual = getattr(x, name)
-            if expected != actual:
-                return False
-
-        return True
-
-    return EqCallback(check_arg, desc)
+    return ArgIsTypeWithAttrs(logging.LogRecord, **attrs)

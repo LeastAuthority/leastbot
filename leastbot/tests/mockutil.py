@@ -63,3 +63,20 @@ class EqCallback (object):
 
 
 ArgIsType = lambda T: EqCallback(lambda v: isinstance(v, T), 'ArgIsType(%s)' % (T.__name__,))
+
+
+def ArgIsTypeWithAttrs(T, **attrs):
+    desc = 'ArgIsLogRecord(%s, %s)' % (T.__name__, ', '.join('%s=%r' % (k,v) for (k,v) in attrs.iteritems()))
+
+    def check_arg(x):
+        if not isinstance(x, T):
+            return False
+
+        for (name, expected) in attrs.iteritems():
+            actual = getattr(x, name)
+            if expected != actual:
+                return False
+
+        return True
+
+    return EqCallback(check_arg, desc)

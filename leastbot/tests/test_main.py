@@ -1,11 +1,14 @@
+import os
 import sys
 from types import FunctionType
+
+from twisted.python.filepath import FilePath
 
 from mock import call, sentinel
 
 from leastbot.main import main, init_logging, parse_args, LogFormat, DateFormat
 from leastbot.tests.logutil import LogMockingTestCase
-from leastbot.tests.mockutil import ArgIsType
+from leastbot.tests.mockutil import ArgIsType, ArgIsTypeWithAttrs
 
 
 class LogInitializationTestCase (LogMockingTestCase):
@@ -23,12 +26,11 @@ class main_Tests (LogInitializationTestCase):
         LogInitializationTestCase.setUp(self)
 
         self.m_reactor = self.make_mock()
+        self.m_config_load = self.patch('leastbot.config.load')
         self.m_Client = self.patch('leastbot.irc.Client')
         self.m_WebServer = self.patch('leastbot.webserver.WebServer')
 
     def test_main_no_args(self):
-        main(args=[], reactor=self.m_reactor)
-
         websecret = 'abc'
         webport = 8080
         irchost = 'irc.oftc.net'
@@ -38,6 +40,21 @@ class main_Tests (LogInitializationTestCase):
         nickserv = 'nickserv'
         channel = '#leastbot-test'
 
+        m_config = self.m_config_load.return_value
+        m_config.secret.irc.password = password
+        m_config.secret.web.githubsecret = websecret
+        m_config.public.irc.host = irchost
+        m_config.public.irc.port = ircport
+        m_config.public.irc.nick = nick
+        m_config.public.irc.nickserv = nickserv
+        m_config.public.irc.channel = channel
+        m_config.public.web.port = webport
+
+        main(args=[], reactor=self.m_reactor)
+
+        self.assert_calls_equal(
+            self.m_config_load,
+            [call(ArgIsTypeWithAttrs(FilePath, path=os.path.expanduser('~/.leastbot/')))])
 
         self.assert_calls_equal(
             self.m_WebServer,
@@ -57,7 +74,7 @@ class main_Tests (LogInitializationTestCase):
         self.assertRaises(SystemExit, main, args=['foo'], reactor=self.m_reactor)
 
         # Assert no I/O subsystems were touched:
-        for m in [self.m_reactor, self.m_WebServer, self.m_Client]:
+        for m in [self.m_reactor, self.m_config_load, self.m_WebServer, self.m_Client]:
             self.assert_calls_equal(m, [])
 
 

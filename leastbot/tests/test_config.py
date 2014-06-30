@@ -52,6 +52,7 @@ class ConfigTests (LogMockingTestCase):
         self.assertEqual(c.public.irc.port, 6667)
         self.assertEqual(c.public.irc.nick, 'leastbot')
         self.assertEqual(c.public.irc.nickserv, 'nickserv')
+        self.assertEqual(c.public.irc.channel, '#leastbot-test')
         self.assertEqual(c.public.web.port, 8080)
 
 
