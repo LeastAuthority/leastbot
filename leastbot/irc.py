@@ -47,7 +47,7 @@ class ClientProtocol (LogMixin, irc.IRCClient):
 
     def privmsg(self, user, channel, message):
         if user == self._nickserv and channel is None:
-            if message == '(notice) You are successfully identified as \x02%s\x02.' % (self._nick,):
+            if message == 'You are successfully identified as \x02%s\x02.' % (self._nick,):
                 self._log.info(
                     'Successfully authenticated with %r; joining %r',
                     self._nickserv,
