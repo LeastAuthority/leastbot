@@ -44,7 +44,7 @@ class ClientTests (LogMockingTestCase):
             [call.handle(ArgIsLogRecord(msg='Connecting to %s:%d...'))])
 
     def test_github_notification_delegation(self):
-        m_factory = self._make_mock()
+        m_factory = self.make_mock()
 
         # Poke behind the curtain:
         self.client._factory = m_factory
@@ -174,53 +174,51 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_clientConnectionFailed_reconnects_with_backoff(self):
         self._check_reconnects_with_backoff('clientConnectionFailed')
 
+    GithubNotificationLogTmpl = 'github notification %sid:%r type:%s %r'
+
     def test_github_notification_without_connection_logs_warning(self):
         f = self._build_factory()
 
         # Peek behind the curtain:
-        self.assertIsNone(f._protocol)
+        self.assertIsNone(f._protoinstance)
 
         eventid = 42
         eventname = 'blah-event'
         eventdict = {'fruit': 'apple', 'meat': 'pork'}
 
-        expectedlogmsg = 'github notification without connection id:%r type:%s %r' % (eventid, eventname, eventdict)
-
         f.handle_github_notification(eventid, eventname, eventdict)
 
-        self._assert_no_log_init(
+        self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(ArgIsLogRecord(levelname='INFO', msg=expectedlogmsg))])
+            [call.handle(ArgIsLogRecord(levelname='INFO', msg=self.GithubNotificationLogTmpl))])
 
     def test_github_notification_with_connection_debug_logs_and_delegates(self):
         f = self._build_factory()
 
-        m_addr = self._make_mock()
+        m_addr = self.make_mock()
 
         f.buildProtocol(m_addr)
 
         # Peek behind the curtain:
-        self.assertIsNotNone(f._protocol)
+        self.assertIsNotNone(f._protoinstance)
 
-        m_protocol = self._make_mock()
+        m_protoinstance = self.make_mock()
 
         # Poke behind the curtain:
-        f._protocol = m_protocol
+        f._protoinstance = m_protoinstance
 
         eventid = 42
         eventname = 'blah-event'
         eventdict = {'fruit': 'apple', 'meat': 'pork'}
 
-        expectedlogmsg = 'github notification id:%r type:%s %r' % (eventid, eventname, eventdict)
-
         f.handle_github_notification(eventid, eventname, eventdict)
 
-        self._assert_no_log_init(
+        self.assert_calls_equal(
             self.m_loghandler,
-            [call.handle(ArgIsLogRecord(levelname='DEBUG', msg=expectedlogmsg))])
+            [call.handle(ArgIsLogRecord(levelname='DEBUG', msg=self.GithubNotificationLogTmpl))])
 
-        self._assert_no_log_init(
-            m_protocol,
+        self.assert_calls_equal(
+            m_protoinstance,
             [call.handle_github_notification(eventid, eventname, eventdict)])
 
     def _build_factory(self):

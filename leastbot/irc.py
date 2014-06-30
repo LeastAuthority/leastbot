@@ -17,6 +17,9 @@ class Client (LogMixin):
         sslctx =  ssl.ClientContextFactory() # BUG: Verify security properties of this usage.
         self._reactor.connectSSL(self._host, self._port, self._factory, sslctx)
 
+    def handle_github_notification(self, eventid, name, details):
+        self._factory.handle_github_notification(eventid, name, details)
+
 
 class ClientProtocol (LogMixin, irc.IRCClient):
     def __init__(self, nick, password, nickserv, channel):
@@ -27,6 +30,15 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self._init_log()
 
         self._nickservloginsuccess = 'You are successfully identified as \x02%s\x02.' % (self.nickname,)
+
+    # Github notifications api:
+    def handle_github_notification(self, eventid, name, details):
+        self.say(
+            self._channel,
+            'github notification (%r, %r, %r)' % (
+                eventid,
+                name,
+                sorted(details.keys())))
 
     # Logging passthrough layer:
     def handleCommand(self, command, prefix, params):
@@ -68,12 +80,32 @@ class ClientProtocolFactory (LogMixin, protocol.ClientFactory):
         self._nickserv = nickserv
         self._channel = channel
         self._delaytracker = BackoffDelayTracker()
+        self._protoinstance = None
         self._init_log()
 
+    # Github notifications api:
+    def handle_github_notification(self, eventid, name, details):
+        if self._protoinstance is None:
+            logfunc = self._log.info
+            state = 'without connection '
+            delegate = lambda eventid, eventname, eventdict: None
+        else:
+            logfunc = self._log.debug
+            state = ''
+            delegate = self._protoinstance.handle_github_notification
+
+        logfunc('github notification %sid:%r type:%s %r', state, eventid, name, details)
+        delegate(eventid, name, details)
+
+    # Twisted event handlers:
     def buildProtocol(self, addr):
         """overrides protocol.ClientFactory.buildProtocol."""
+        assert self._protoinstance is None, \
+            'Invariant violation: self._protoinstance %r' % (self._protoinstance,)
+
         self._delaytracker.reset()
-        return self.protocol(self._nick, self._password, self._nickserv, self._channel)
+        self._protoinstance = self.protocol(self._nick, self._password, self._nickserv, self._channel)
+        return self._protoinstance
 
     def clientConnectionFailed(self, connector, reason):
         self._reconnect_with_backoff(connector, 'failed', reason)

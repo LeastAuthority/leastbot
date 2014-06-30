@@ -62,7 +62,7 @@ class main_Tests (LogInitializationTestCase):
 
         self.assert_calls_equal(
             self.m_WebServer,
-            [call(self.m_reactor, webport, websecret, self.m_client.handle_github_notification),
+            [call(self.m_reactor, webport, websecret, self.m_Client.return_value.handle_github_notification),
              call().listen()])
 
         self.assert_calls_equal(

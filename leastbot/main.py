@@ -1,6 +1,5 @@
 import os
 import sys
-import pprint
 import logging
 import argparse
 
@@ -34,12 +33,13 @@ def main(args=sys.argv[1:], reactor=reactor):
         c.public.irc.nickserv,
         c.public.irc.channel)
 
-    def handle_event(*a, **kw):
-        pprint.pprint(('unhandled event:', a, kw))
+    s = webserver.WebServer(
+        reactor,
+        c.public.web.port,
+        c.secret.web.githubsecret,
+        ircclient.handle_github_notification)
 
-    s = webserver.WebServer(reactor, c.secret.web.githubsecret, handle_event)
-    s.listen(c.public.web.port)
-
+    s.listen()
     ircclient.connect()
 
     reactor.run()
