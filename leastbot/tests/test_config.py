@@ -35,14 +35,14 @@ class ConfigTests (LogMockingTestCase):
         self._assert_load_SystemExit_has(config.ExampleSecretConfig)
 
     def test_load_missing_public_file_raises_SystemExit(self):
-        self.m_secretpath.open.return_value = StringIO(ValidSecretConfig)
+        self.m_secretpath.open.return_value = StringIO(config.ExampleSecretConfig)
         self.m_publicpath.open.side_effect = IOError_ENOENT
 
         self._assert_load_SystemExit_has(config.ExamplePublicConfig)
 
     def test_load_config_successfully(self):
-        self.m_secretpath.open.return_value = StringIO(ValidSecretConfig)
-        self.m_publicpath.open.return_value = StringIO(ValidPublicConfig)
+        self.m_secretpath.open.return_value = StringIO(config.ExampleSecretConfig)
+        self.m_publicpath.open.return_value = StringIO(config.ExamplePublicConfig)
 
         c = self._load()
 
@@ -59,21 +59,3 @@ class ConfigTests (LogMockingTestCase):
 IOError_ENOENT = IOError()
 IOError_ENOENT.errno = errno.ENOENT
 
-ValidSecretConfig = """
-[irc client]
-password: fake-irc-password
-
-[web server]
-githubsecret: fake-github-secret
-"""
-
-ValidPublicConfig = """
-[irc client]
-host: irc.example.com
-port: 6667
-nick: leastbot
-nickserv: nickserv
-
-[web server]
-port: 8080
-"""

@@ -41,6 +41,7 @@ def load(confdir):
                 host = publicrcp.get('irc client', 'host'),
                 port = publicrcp.getint('irc client', 'port'),
                 nick = publicrcp.get('irc client', 'nick'),
+                channel = publicrcp.get('irc client', 'channel'),
                 nickserv = publicrcp.get('irc client', 'nickserv'),
                 ),
             web = ConfigStruct(
@@ -78,6 +79,7 @@ ExamplePublicConfig = """
 host: irc.example.com
 port: 6667
 nick: leastbot
+channel: #leastbot-test
 
 # This should be the nickname of a NickServ service bot:
 nickserv: nickserv
