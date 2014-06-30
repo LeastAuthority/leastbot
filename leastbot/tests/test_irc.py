@@ -186,7 +186,7 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
 
     GithubNotificationLogTmpl = 'github notification %sid:%r type:%s %r'
 
-    def test_github_notification_without_connection_logs_warning(self):
+    def test_github_notification_without_connection_logs_info(self):
         f = self._build_factory()
 
         # Peek behind the curtain:
