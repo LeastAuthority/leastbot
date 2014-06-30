@@ -49,7 +49,7 @@ class ClientProtocolTests (LogMockingTestCase):
 
         self.nick = 'Nick'
         self.password = 'a password'
-        self.nickserv = 'nickserv'
+        self.nickserv = 'NickServ'
         self.channel = '#foo'
 
         self.p = irc.ClientProtocol(self.nick, self.password, self.nickserv, self.channel)
@@ -112,11 +112,12 @@ class ClientProtocolTests (LogMockingTestCase):
             [call(self.nickserv, 'identify %s' % (self.password,))])
 
     def test_noticed_nickserv_login_success_triggers_channel_join(self):
-        # (notice) You are successfully identified as ${NICK}.
+        #  You are successfully identified as ${NICK}.
+        user = '%s!services@services.oftc.net' % (self.nickserv,)
         m_join = self.patch('leastbot.irc.ClientProtocol.join')
 
         loginmsg = 'You are successfully identified as \x02%s\x02.' % (self.nick,)
-        self.p.noticed(self.nickserv, self.nick, loginmsg)
+        self.p.noticed(user, self.nick, loginmsg)
 
         self.assert_calls_equal(
             m_join,
