@@ -46,9 +46,9 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self.msg(self._nickserv, 'identify %s' % (self._password,))
 
     def noticed(self, user, channel, message):
-        self._log.debug('Does user %r == self._nickserv %r ? %r', user, self._nickserv, user == self._nickserv)
+        usershort = user.split('!', 1)[0]
 
-        if (user, channel, message) == (self._nickserv, self.nickname, self._nickservloginsuccess):
+        if (usershort, channel, message) == (self._nickserv, self.nickname, self._nickservloginsuccess):
             self._log.info(
                 'Successfully authenticated with %r; joining %r',
                 self._nickserv,
