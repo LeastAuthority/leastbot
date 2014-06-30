@@ -22,27 +22,23 @@ class ConfigTests (LogMockingTestCase):
     def _load(self):
         return config.load(self.m_configdir)
 
+    def _assert_load_SystemExit_has(self, s):
+        try:
+            self._load()
+        except SystemExit, e:
+            if e.args[0].find(s) == -1:
+                self.fail('An example config not given: %r' % (e.args,))
+
     def test_load_missing_secret_file_raises_SystemExit(self):
         self.m_secretpath.open.side_effect = IOError_ENOENT
 
-        self.assertRaises(SystemExit, self._load)
-
-    def test_load_unconfigured_secret_file_raises_SystemExit(self):
-        self.m_secretpath.open.return_value = StringIO(config.SecretConfigExample)
-
-        self.assertRaises(SystemExit, self._load)
+        self._assert_load_SystemExit_has(config.ExampleSecretConfig)
 
     def test_load_missing_public_file_raises_SystemExit(self):
         self.m_secretpath.open.return_value = StringIO(ValidSecretConfig)
         self.m_publicpath.open.side_effect = IOError_ENOENT
 
-        self.assertRaises(SystemExit, self._load)
-
-    def test_load_unconfigured_public_file_raises_SystemExit(self):
-        self.m_secretpath.open.return_value = StringIO(ValidSecretConfig)
-        self.m_publicpath.open.return_value = StringIO(config.PublicConfigExample)
-
-        self.assertRaises(SystemExit, self._load)
+        self._assert_load_SystemExit_has(config.ExamplePublicConfig)
 
     def test_load_config_successfully(self):
         self.m_secretpath.open.return_value = StringIO(ValidSecretConfig)

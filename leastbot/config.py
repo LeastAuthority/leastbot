@@ -68,7 +68,7 @@ class ConfigStruct (object):
             setattr(self, n, v)
 
 
-SecretConfigExample = """
+ExampleSecretConfig = """
 # Remove the "unconfigured" section and parameter, or else leastbot will
 # assume you have not edited # this file properly:
 [unconfigured]
@@ -82,7 +82,7 @@ githubsecret: fake-github-secret
 """
 
 
-PublicConfigExample = """
+ExamplePublicConfig = """
 # Remove the "unconfigured" section and parameter, or else leastbot will
 # assume you have not edited # this file properly:
 [unconfigured]
