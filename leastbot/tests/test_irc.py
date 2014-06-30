@@ -13,34 +13,51 @@ class ClientTests (LogMockingTestCase):
     def setUp(self):
         LogMockingTestCase.setUp(self)
 
-    def test_connect(self):
-        host = 'irc.fakehost.net'
-        port = 6697
+        self.host = 'irc.fakehost.net'
+        self.port = 6697
         nick = 'leastbot'
         password = 'blah'
         nickserv = 'ickservnay'
         channel = '#foo'
-        m_reactor = self.make_mock()
+        self.m_reactor = self.make_mock()
 
-        client = irc.Client(m_reactor, host, port, nick, password, nickserv, channel)
+        self.client = irc.Client(self.m_reactor, self.host, self.port, nick, password, nickserv, channel)
 
+    def test_init_does_no_io(self):
         self.assert_calls_equal(
-            m_reactor,
+            self.m_reactor,
             [])
 
-        client.connect()
+    def test_connect(self):
+        self.client.connect()
 
         self.assert_calls_equal(
-            m_reactor,
+            self.m_reactor,
             [call.connectSSL(
-                    host,
-                    port,
+                    self.host,
+                    self.port,
                     ArgIsType(irc.ClientProtocolFactory),
                     ArgIsType(ssl.ClientContextFactory))])
 
         self.assert_calls_equal(
             self.m_loghandler,
             [call.handle(ArgIsLogRecord(msg='Connecting to %s:%d...'))])
+
+    def test_github_notification_delegation(self):
+        m_factory = self._make_mock()
+
+        # Poke behind the curtain:
+        self.client._factory = m_factory
+
+        eventid = 42
+        eventname = 'blah-event'
+        eventdict = {'fruit': 'apple', 'meat': 'pork'}
+
+        self.client.handle_github_notification(eventid, eventname, eventdict)
+
+        self.assert_calls_equal(
+            m_factory,
+            [call.handle_github_notification(eventid, eventname, eventdict)])
 
 
 class ClientProtocolTests (LogMockingTestCase):
@@ -101,7 +118,6 @@ class ClientProtocolTests (LogMockingTestCase):
             m_ircIRCClient,
             [call.msg(self.p, to, msg)])
 
-
     def test_signedOn_triggers_nickserv_login(self):
         m_msg = self.patch('leastbot.irc.ClientProtocol.msg')
 
@@ -123,19 +139,24 @@ class ClientProtocolTests (LogMockingTestCase):
             m_join,
             [call(self.channel)])
 
+    def test_github_notification_triggers_say(self):
+        m_say = self.patch('leastbot.irc.ClientProtocol.say')
+
+        self.p.handle_github_notification(42, 'blah-event', {'fruit': 'apple', 'meat': 'pork'})
+
+        expectedmessage = "github notification (42, 'blah-event', ['fruit', 'meat'])"
+
+        self.assert_calls_equal(
+            m_say,
+            [call(self.channel, expectedmessage)])
+
 
 class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_protocol_is_irc_ClientProtocol(self):
         self.assertIs(irc.ClientProtocol, irc.ClientProtocolFactory.protocol)
 
     def test_buildProtocol_resets_backoff_counter(self):
-        nick = 'leastbot'
-        password = 'blah'
-        nickserv = 'the-nickserv-user'
-        channel = '#foo'
-        m_reactor = self.make_mock()
-
-        f = irc.ClientProtocolFactory(m_reactor, nick, password, nickserv, channel)
+        f = self._build_factory()
 
         # Violate the interface abstraction to verify backoff behavior:
         m_delaytracker = self.make_mock()
@@ -153,14 +174,66 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
     def test_clientConnectionFailed_reconnects_with_backoff(self):
         self._check_reconnects_with_backoff('clientConnectionFailed')
 
-    def _check_reconnects_with_backoff(self, methodname):
+    def test_github_notification_without_connection_logs_warning(self):
+        f = self._build_factory()
+
+        # Peek behind the curtain:
+        self.assertIsNone(f._protocol)
+
+        eventid = 42
+        eventname = 'blah-event'
+        eventdict = {'fruit': 'apple', 'meat': 'pork'}
+
+        expectedlogmsg = 'github notification without connection id:%r type:%s %r' % (eventid, eventname, eventdict)
+
+        f.handle_github_notification(eventid, eventname, eventdict)
+
+        self._assert_no_log_init(
+            self.m_loghandler,
+            [call.handle(ArgIsLogRecord(levelname='INFO', msg=expectedlogmsg))])
+
+    def test_github_notification_with_connection_debug_logs_and_delegates(self):
+        f = self._build_factory()
+
+        m_addr = self._make_mock()
+
+        f.buildProtocol(m_addr)
+
+        # Peek behind the curtain:
+        self.assertIsNotNone(f._protocol)
+
+        m_protocol = self._make_mock()
+
+        # Poke behind the curtain:
+        f._protocol = m_protocol
+
+        eventid = 42
+        eventname = 'blah-event'
+        eventdict = {'fruit': 'apple', 'meat': 'pork'}
+
+        expectedlogmsg = 'github notification id:%r type:%s %r' % (eventid, eventname, eventdict)
+
+        f.handle_github_notification(eventid, eventname, eventdict)
+
+        self._assert_no_log_init(
+            self.m_loghandler,
+            [call.handle(ArgIsLogRecord(levelname='DEBUG', msg=expectedlogmsg))])
+
+        self._assert_no_log_init(
+            m_protocol,
+            [call.handle_github_notification(eventid, eventname, eventdict)])
+
+    def _build_factory(self):
         nick = 'leastbot'
         password = 'blah'
         nickserv = 'the-nickserv-user'
         channel = '#foo'
-        m_reactor = self.make_mock()
+        self.m_reactor = self.make_mock()
 
-        f = irc.ClientProtocolFactory(m_reactor, nick, password, nickserv, channel)
+        return irc.ClientProtocolFactory(self.m_reactor, nick, password, nickserv, channel)
+
+    def _check_reconnects_with_backoff(self, methodname):
+        f = self._build_factory()
 
         # Violate the interface abstraction to verify backoff behavior:
         m_delaytracker = self.make_mock()
@@ -187,7 +260,7 @@ class ClientProtocolFactoryTests (LogMockingTestCase):
             [call.handle(ArgIsLogRecord(msg='Connection %s: %r (Reconnecting in %.2f seconds.)'))])
 
         self.assert_calls_equal(
-            m_reactor,
+            self.m_reactor,
             [call.callLater(m_delaytracker.increment.return_value, m_connector.connect)])
 
 

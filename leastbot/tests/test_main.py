@@ -1,6 +1,5 @@
 import os
 import sys
-from types import FunctionType
 
 from twisted.python.filepath import FilePath
 
@@ -8,7 +7,7 @@ from mock import call, sentinel
 
 from leastbot.main import main, init_logging, parse_args, LogFormat, DateFormat
 from leastbot.tests.logutil import LogMockingTestCase
-from leastbot.tests.mockutil import ArgIsType, ArgIsTypeWithAttrs
+from leastbot.tests.mockutil import ArgIsTypeWithAttrs
 
 
 class LogInitializationTestCase (LogMockingTestCase):
@@ -57,14 +56,14 @@ class main_Tests (LogInitializationTestCase):
             [call(ArgIsTypeWithAttrs(FilePath, path=os.path.expanduser('~/.leastbot')))])
 
         self.assert_calls_equal(
-            self.m_WebServer,
-            [call(self.m_reactor, websecret, ArgIsType(FunctionType)),
-             call().listen(webport)])
-
-        self.assert_calls_equal(
             self.m_Client,
             [call(self.m_reactor, irchost, ircport, nick, password, nickserv, channel),
              call().connect()])
+
+        self.assert_calls_equal(
+            self.m_WebServer,
+            [call(self.m_reactor, webport, websecret, self.m_client.handle_github_notification),
+             call().listen()])
 
         self.assert_calls_equal(
             self.m_reactor,
