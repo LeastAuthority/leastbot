@@ -1,3 +1,4 @@
+import os
 import sys
 import pprint
 import logging
@@ -5,7 +6,9 @@ import argparse
 
 from twisted.internet import reactor
 from twisted.python import log
+from twisted.python.filepath import FilePath
 
+from leastbot import config
 from leastbot import irc
 from leastbot import webserver
 
@@ -20,21 +23,22 @@ def main(args=sys.argv[1:], reactor=reactor):
     opts = parse_args(args)
     init_logging(getattr(logging, opts.loglevel))
 
-    irchost = 'irc.oftc.net'
-    ircport = 6697
-    nick = 'leastbot'
-    password = '012345'
-    nickserv = 'nickserv'
-    channel = '#leastbot-test'
+    c = config.load(FilePath(os.path.expanduser('~/.leastbot/')))
 
-    ircclient = irc.Client(reactor, irchost, ircport, nick, password, nickserv, channel)
+    ircclient = irc.Client(
+        reactor,
+        c.public.irc.host,
+        c.public.irc.port,
+        c.public.irc.nick,
+        c.secret.irc.password,
+        c.public.irc.nickserv,
+        c.public.irc.channel)
 
     def handle_event(*a, **kw):
         pprint.pprint(('unhandled event:', a, kw))
 
-    badsecret = 'abc'
-    s = webserver.WebServer(reactor, badsecret, handle_event)
-    s.listen(8080)
+    s = webserver.WebServer(reactor, c.secret.web.githubsecret, handle_event)
+    s.listen(c.public.web.port)
 
     ircclient.connect()
 

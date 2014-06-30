@@ -54,7 +54,7 @@ class main_Tests (LogInitializationTestCase):
 
         self.assert_calls_equal(
             self.m_config_load,
-            [call(ArgIsTypeWithAttrs(FilePath, path=os.path.expanduser('~/.leastbot/')))])
+            [call(ArgIsTypeWithAttrs(FilePath, path=os.path.expanduser('~/.leastbot')))])
 
         self.assert_calls_equal(
             self.m_WebServer,

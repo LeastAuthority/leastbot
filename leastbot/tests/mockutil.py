@@ -66,7 +66,7 @@ ArgIsType = lambda T: EqCallback(lambda v: isinstance(v, T), 'ArgIsType(%s)' % (
 
 
 def ArgIsTypeWithAttrs(T, **attrs):
-    desc = 'ArgIsLogRecord(%s, %s)' % (T.__name__, ', '.join('%s=%r' % (k,v) for (k,v) in attrs.iteritems()))
+    desc = 'ArgIsLogTypeWithAttrs(%s, %s)' % (T.__name__, ', '.join('%s=%r' % (k,v) for (k,v) in attrs.iteritems()))
 
     def check_arg(x):
         if not isinstance(x, T):
