@@ -98,25 +98,35 @@ class ClientProtocolTests (LogMockingTestCase):
             m_ircIRCClient,
             [call.handleCommand(self.p, command, prefix, params)])
 
-    def test_msg_debug_log(self):
+    def _test_msg_debug_log(self, *args):
         m_ircIRCClient = self.patch('twisted.words.protocols.irc.IRCClient')
 
-        to='bob'
-        msg='I like bacon!'
-
-        self.p.msg(to, msg)
+        self.p.msg(*args)
 
         self.assert_calls_equal(
             self.m_loghandler,
             [call.handle(
                     ArgIsLogRecord(
                         levelname='DEBUG',
-                        msg=r'msg(user=%r, message=%r)'))])
+                        msg=r'msg(user=%r, message=%r, length=%r)'))])
+
+        expectedargs = args
+        if len(expectedargs) == 2:
+            expectedargs += (None,)
 
         # Ensure we delegate to the base library:
         self.assert_calls_equal(
             m_ircIRCClient,
-            [call.msg(self.p, to, msg)])
+            [call.msg(self.p, *expectedargs)])
+
+    def test_msg_debug_log_no_length(self):
+        self._test_msg_debug_log('bob', 'Hello, friend!')
+
+    def test_msg_debug_log_with_None_length(self):
+        self._test_msg_debug_log('bob', 'Hello, friend!', None)
+
+    def test_msg_debug_log_with_length(self):
+        self._test_msg_debug_log('bob', 'Hello, friend!', 42)
 
     def test_signedOn_triggers_nickserv_login(self):
         m_msg = self.patch('leastbot.irc.ClientProtocol.msg')

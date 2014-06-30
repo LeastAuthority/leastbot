@@ -45,9 +45,9 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self._log.debug('handleCommand(command=%r, prefix=%r, params=%r)', command, prefix, params)
         irc.IRCClient.handleCommand(self, command, prefix, params)
 
-    def msg(self, user, message):
-        self._log.debug('msg(user=%r, message=%r)', user, message)
-        irc.IRCClient.msg(self, user, message)
+    def msg(self, user, message, length=None):
+        self._log.debug('msg(user=%r, message=%r, length=%r)', user, message, length)
+        irc.IRCClient.msg(self, user, message, length)
 
     # Logging event responders:
     def connectionMade(self):
