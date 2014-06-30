@@ -10,34 +10,22 @@ def load(confdir):
 
     @raises SystemExit - for usage errors.
     """
-    def _read_and_parse_child(name):
+    def _read_and_parse_child(name, exampleconfig):
         childpath = confdir.child(name + '.conf')
         try:
             fp = childpath.open('r')
         except IOError, e:
             if e.errno == errno.ENOENT:
-                raise SystemExit(
-                    'Config file %r does not exist. Try running `leastbot init-config --help`.' % (
-                        childpath.path,
-                        )
-                    )
+                raise SystemExit(ConfigMissingOutputTemplate % (childpath.path, exampleconfig))
             else:
                 raise
 
         rcp = RawConfigParser()
         rcp.readfp(fp)
-
-        if rcp.has_option('unconfigured', 'unconfigured'):
-            raise SystemExit(
-                'Config file %r has not been properly configured yet.' % (
-                    childpath.path,
-                    )
-                )
-
         return rcp
 
-    secretrcp = _read_and_parse_child('secret')
-    publicrcp = _read_and_parse_child('public')
+    secretrcp = _read_and_parse_child('secret', ExampleSecretConfig)
+    publicrcp = _read_and_parse_child('public', ExamplePublicConfig)
 
     return ConfigStruct(
         secret = ConfigStruct(
@@ -68,12 +56,14 @@ class ConfigStruct (object):
             setattr(self, n, v)
 
 
-ExampleSecretConfig = """
-# Remove the "unconfigured" section and parameter, or else leastbot will
-# assume you have not edited # this file properly:
-[unconfigured]
-unconfigured: true
+ConfigMissingOutputTemplate = """
+# The config file %r is missing. This output is an example config file,
+# which you can place at that path, then edit for your usage.
 
+%s
+"""
+
+ExampleSecretConfig = """
 [irc client]
 password: fake-irc-password
 
@@ -83,11 +73,6 @@ githubsecret: fake-github-secret
 
 
 ExamplePublicConfig = """
-# Remove the "unconfigured" section and parameter, or else leastbot will
-# assume you have not edited # this file properly:
-[unconfigured]
-unconfigured: true
-
 # Note: The irc client *always* uses ssl.
 [irc client]
 host: irc.example.com
