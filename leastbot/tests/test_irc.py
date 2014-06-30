@@ -115,7 +115,7 @@ class ClientProtocolTests (LogMockingTestCase):
         # (notice) You are successfully identified as ${NICK}.
         m_join = self.patch('leastbot.irc.ClientProtocol.join')
 
-        loginmsg = '(notice) You are successfully identified as %s.' % (self.nick,)
+        loginmsg = '(notice) You are successfully identified as \x02%s\x02.' % (self.nick,)
         self.p.privmsg(self.nickserv, None, loginmsg)
 
         self.assert_calls_equal(
