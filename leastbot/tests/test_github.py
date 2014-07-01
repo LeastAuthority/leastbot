@@ -217,7 +217,7 @@ class EventFormatterTests (unittest.TestCase):
             evinfo = evspec['info']
             expectedformat = '\n'.join(evspec['expectedlines']) + '\n'
 
-            formatter = github.Formatters[evtype]
+            formatter = github.get_formatter(evtype)
 
             result = formatter(evid, evtype, evinfo)
 
