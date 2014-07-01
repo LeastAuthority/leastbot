@@ -5,6 +5,8 @@ import hashlib
 from twisted.web import resource
 from twisted.web.server import NOT_DONE_YET
 
+from functable import FunctionTable
+
 from leastbot.log import LogMixin
 
 
@@ -74,3 +76,64 @@ def constant_time_compare(a, b):
     for (x, y) in zip(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
+
+
+# Event formatting - public api:
+def format_event(eventid, eventtype, eventinfo):
+    f = _formatters.get(eventtype, _format_unknown_event)
+    return f(eventid, eventtype, eventinfo)
+
+
+# Event formatting - innards:
+def _format_unknown_event(eid, etype, einfo):
+    return """\
+Github event type %r has no formatter.
+Event ID: %r
+Body Params: %r
+""" % (etype, eid, sorted(einfo.keys()))
+
+
+_formatters = FunctionTable('_format_')
+
+
+@_formatters.register
+def _format_push(_eid, _etype, einfo):
+    alw = _AttrLookupWrapper(einfo)
+    return """\
+Pushed: %(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r
+Push diff: %(DIFFURL)s
+""" % dict(
+        PUSHER      = alw.pusher.email,
+        COMMITCOUNT = len(alw.commits),
+        REF         = alw.ref,
+        REPOURL     = alw.repository.url,
+        DIFFURL     = alw.compare,
+        )
+
+
+class _AttrLookupWrapper (object):
+    def __init__(self, d, namepath=[]):
+        self._d = d
+        self._np = namepath
+
+    def __getattr__(self, name):
+        if self._d is None:
+            return self
+
+        sentinel = object()
+        v = self._d.get(name, sentinel)
+        if v is sentinel:
+            return _AttrLookupWrapper(None, self._np + [name])
+        elif isinstance(v, dict):
+            return _AttrLookupWrapper(v, self._np + [name])
+        elif isinstance(v, unicode):
+            return v.encode('utf8') # Is this sane?
+        else:
+            return v
+
+    def __repr__(self):
+        return '<Missing %s>' % ('/'.join(self._np),)
+
+    def __len__(self):
+        # Hack: Just return an obviously wrong value to make humans suspicious of an error.
+        return 0xffFFffFF

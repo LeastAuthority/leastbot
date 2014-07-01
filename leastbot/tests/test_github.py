@@ -201,10 +201,10 @@ class EventFormatterTests (unittest.TestCase):
                 # u'pusher' is missing.
                 u'compare': u'https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082',
                 u'ref': u'refs/heads/master',
-                u'commits': [None] * 12, # Note - only the length is used.
+                # u'commits' is misisng.
                 },
             expectedlines = [
-                "Pushed: <Missing pusher> pushed 12 commits to 'refs/heads/master' of <Missing repository/url>",
+                "Pushed: <Missing pusher> pushed 4294967295 commits to 'refs/heads/master' of <Missing repository/url>",
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
                 ],
             ),
@@ -217,8 +217,6 @@ class EventFormatterTests (unittest.TestCase):
             evinfo = evspec['info']
             expectedformat = '\n'.join(evspec['expectedlines']) + '\n'
 
-            formatter = github.get_formatter(evtype)
-
-            result = formatter(evid, evtype, evinfo)
+            result = github.format_event(evid, evtype, evinfo)
 
             self.assertEqual(result, expectedformat)
