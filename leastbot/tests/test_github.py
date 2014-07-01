@@ -165,3 +165,60 @@ class XHubSignatureTestVector (object):
     expectedsig='sha1=91bc104310ed46d5633a249e0240dd98a37435cf'
 
 
+
+class EventFormatterTests (unittest.TestCase):
+    Vectors = [
+        dict(
+            id = 42,
+            name = '! MAGICAL TEST EVENT !',
+            info = {'fruit': 'banana', 'meat': 'mutton'},
+            expectedlines = [
+                "Github event type '! MAGICAL TEST EVENT !' has no formatter.",
+                'Event ID: 42',
+                "Body Params: ['fruit', 'meat']",
+                ],
+            ),
+        dict( # A push with the expected parameters:
+            id = 'abcd-1234-ef09-cafe',
+            name = 'push',
+            info = {
+                u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
+                u'pusher': {u'email': u'fakeuser@example.com'},
+                u'compare': u'https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082',
+                u'ref': u'refs/heads/master',
+                u'commits': [None] * 12, # Note - only the length is used.
+                },
+            expectedlines = [
+                "Pushed: 'fakeuser@example.com' pushed 12 commits to 'refs/heads/master' of 'https://github.com/fakeuser/leastbot'",
+                "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
+                ],
+            ),
+        dict( # A push with some missing parameters:
+            id = 'abcd-1234-ef09-cafe',
+            name = 'push',
+            info = {
+                u'repository': {u'info': 'Whee!'},
+                # u'pusher' is missing.
+                u'compare': u'https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082',
+                u'ref': u'refs/heads/master',
+                u'commits': [None] * 12, # Note - only the length is used.
+                },
+            expectedlines = [
+                "Pushed: <Missing pusher> pushed 12 commits to 'refs/heads/master' of <Missing repository/url>",
+                "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
+                ],
+            ),
+        ]
+
+    def test_all_vectors(self):
+        for evspec in self.Vectors:
+            evid = evspec['id']
+            evtype = evspec['name']
+            evinfo = evspec['info']
+            expectedformat = '\n'.join(evspec['expectedlines']) + '\n'
+
+            formatter = github.Formatters[evtype]
+
+            result = formatter(evid, evtype, evinfo)
+
+            self.assertEqual(result, expectedformat)
