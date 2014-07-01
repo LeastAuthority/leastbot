@@ -81,16 +81,13 @@ def constant_time_compare(a, b):
 # Event formatting - public api:
 def format_event(eventid, eventtype, eventinfo):
     f = _formatters.get(eventtype, _format_unknown_event)
-    return f(eventid, eventtype, eventinfo)
+    alw = _AttrLookupWrapper(eventinfo)
+    return f(eventid, eventtype, alw)
 
 
 # Event formatting - innards:
-def _format_unknown_event(eid, etype, einfo):
-    return """\
-Github event type %r has no formatter.
-Event ID: %r
-Body Params: %r
-""" % (etype, eid, sorted(einfo.keys()))
+def _format_unknown_event(eid, etype, _einfo):
+    return 'No formatter for github event type %r with id %r.\n' % (etype, eid)
 
 
 _formatters = FunctionTable('_format_')
@@ -98,16 +95,15 @@ _formatters = FunctionTable('_format_')
 
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
-    alw = _AttrLookupWrapper(einfo)
     return """\
 Pushed: %(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r
 Push diff: %(DIFFURL)s
 """ % dict(
-        PUSHER      = alw.pusher.email,
-        COMMITCOUNT = len(alw.commits),
-        REF         = alw.ref,
-        REPOURL     = alw.repository.url,
-        DIFFURL     = alw.compare,
+        PUSHER      = einfo.pusher.email,
+        COMMITCOUNT = len(einfo.commits),
+        REF         = einfo.ref,
+        REPOURL     = einfo.repository.url,
+        DIFFURL     = einfo.compare,
         )
 
 

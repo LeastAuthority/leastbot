@@ -173,9 +173,7 @@ class EventFormatterTests (unittest.TestCase):
             name = '! MAGICAL TEST EVENT !',
             info = {'fruit': 'banana', 'meat': 'mutton'},
             expectedlines = [
-                "Github event type '! MAGICAL TEST EVENT !' has no formatter.",
-                'Event ID: 42',
-                "Body Params: ['fruit', 'meat']",
+                "No formatter for github event type '! MAGICAL TEST EVENT !' with id 42.",
                 ],
             ),
         dict( # A push with the expected parameters:
