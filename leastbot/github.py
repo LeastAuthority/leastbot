@@ -82,7 +82,8 @@ def constant_time_compare(a, b):
 def format_event(eventid, eventtype, eventinfo):
     f = _formatters.get(eventtype, _format_unknown_event)
     alw = _AttrLookupWrapper(eventinfo)
-    return f(eventid, eventtype, alw)
+    unistr = f(eventid, eventtype, alw)
+    return unistr.encode('utf8') # BUG: Is this acceptable for IRC?
 
 
 # Event formatting - innards:
@@ -127,23 +128,20 @@ def _format_issue_comment(_eid, _etype, einfo):
     trunctext = ''
 
     if len(body) > 120:
-        body = body[:119] + u'\u2026'
-        trunctext = ' (truncated)'
-
-    body = body.encode('utf8') # BUG: Do encoding more consistently.
+        body = body[:120]
+        trunctext = u'\u2026 (truncated)'
 
     return '\n'.join([
-        '%(SENDER)r %(ACTION)s issue %(ISSUENUMBER)r comment %(COMMENTID)r.',
+        '%(SENDER)r %(ACTION)s issue %(ISSUENUMBER)r comment %(COMMENTID)r: %(BODY)r%(TRUNCTEXT)s',
         'Comment: %(URL)s',
-        'Body%(TRUNCTEXT)s: %(BODY)s',
         ]) % dict(
         SENDER      = einfo.sender.login,
         ACTION      = einfo.action,
         ISSUENUMBER = einfo.issue.number,
         COMMENTID   = einfo.comment.id,
-        URL         = einfo.comment.html_url,
-        TRUNCTEXT   = trunctext,
         BODY        = body,
+        TRUNCTEXT   = trunctext,
+        URL         = einfo.comment.html_url,
         )
 
 

@@ -237,9 +237,8 @@ class EventFormatterTests (unittest.TestCase):
                     },
                 },
             expectedlines = [
-                "'exampleuser' created issue 42 comment 97.",
+                "'exampleuser' created issue 42 comment 97: 'A very short comment.'",
                 "Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97",
-                "Body: A very short comment.",
                 ],
             ),
         dict( # Updating a long comment:
@@ -268,10 +267,8 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
                     },
                 },
             expectedlines = [
-                "'exampleuser' created issue 42 comment 97.",
+                u"'exampleuser' created issue 42 comment 97: 'This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, which '\u2026 (truncated)".encode('utf8'),
                 'Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
-                u'Body (truncated): This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, which\u2026'.encode('utf8'), # U+2026 - horizontal ellipse.
-                # BUG: Is utf8 always acceptable in IRC?
                 ],
             ),
         ]
