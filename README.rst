@@ -37,6 +37,12 @@ Recommended Deployment on Debian-like
         virtualenv ./leastbotvenv
         source ./leastbotvenv/bin/activate
 
+#. Install `service_identity` for some weird reason I don't quite understand but seems related to the python `cryptography` package:
+
+    .. code::
+
+        pip install service_identity
+
 #. Install `leastbot` from pypi (into the activated `virtualenv`):
 
     .. code::
