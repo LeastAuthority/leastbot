@@ -35,7 +35,10 @@ class ClientProtocol (LogMixin, irc.IRCClient):
     # Github notifications api:
     def handle_github_notification(self, eventid, name, details):
         message = github.format_event(eventid, name, details)
-        self.say(self._channel, message)
+        if message is None:
+            self._log.info('Swallowed github %r event %r.', name, eventid)
+        else:
+            self.say(self._channel, message)
 
     # Logging passthrough layer:
     def handleCommand(self, command, prefix, params):

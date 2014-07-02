@@ -170,7 +170,7 @@ class ClientProtocolTests (LogMockingTestCase):
     def test_github_notification_handles_swallowed_events(self):
         m_say = self.patch('leastbot.irc.ClientProtocol.say')
         m_format_event = self.patch('leastbot.github.format_event')
-        m_format_event.return_type = None # Indicates the event should be swallowed.
+        m_format_event.side_effect = [None] # Indicates the event should be swallowed.
 
         eventid = 42,
         eventtype = 'blah-event'

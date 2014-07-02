@@ -82,8 +82,12 @@ def constant_time_compare(a, b):
 def format_event(eventid, eventtype, eventinfo):
     f = _formatters.get(eventtype, _format_unknown_event)
     alw = _AttrLookupWrapper(eventinfo)
-    unistr = f(eventid, eventtype, alw)
-    return unistr.encode('utf8') # BUG: Is this acceptable for IRC?
+    result = f(eventid, eventtype, alw)
+
+    if result is None:
+        return result
+    else:
+        return result.encode('utf8') # BUG: Is this acceptable for IRC?
 
 
 # Event formatting - innards:
@@ -92,6 +96,11 @@ def _format_unknown_event(eid, etype, _einfo):
 
 
 _formatters = FunctionTable('_format_')
+
+
+@_formatters.register
+def _format_ping(_eid, _etype, _einfo):
+    return None
 
 
 @_formatters.register
