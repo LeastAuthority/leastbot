@@ -187,7 +187,7 @@ class EventFormatterTests (unittest.TestCase):
                 u'commits': [None] * 12, # Note - only the length is used.
                 },
             expectedlines = [
-                "Pushed: 'fakeuser@example.com' pushed 12 commits to 'refs/heads/master' of 'https://github.com/fakeuser/leastbot'",
+                "'fakeuser@example.com' pushed 12 commits to 'refs/heads/master' of 'https://github.com/fakeuser/leastbot'",
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
                 ],
             ),
@@ -202,8 +202,74 @@ class EventFormatterTests (unittest.TestCase):
                 # u'commits' is misisng.
                 },
             expectedlines = [
-                "Pushed: <Missing pusher> pushed 4294967295 commits to 'refs/heads/master' of <Missing repository/url>",
+                "<Missing pusher> pushed 4294967295 commits to 'refs/heads/master' of <Missing repository/url>",
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
+                ],
+            ),
+        dict(
+            id = 'abcd-1234-ef09-cafe',
+            name = 'issues',
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u'action': u'opened',
+                u'issue': {
+                    u'title': u'An example issue title.',
+                    u'id': 42,
+                    u'html_url': u'https://github.com/fakeuser/leastbot/issues/42',
+                    },
+                },
+            expectedlines = [
+                "'exampleuser' opened issue 42 'An example issue title.'",
+                "Issue: https://github.com/fakeuser/leastbot/issues/42",
+                ],
+            ),
+        dict( # Updating a short comment:
+            id = 'abcd-1234-ef09-cafe',
+            name = 'issue_comment',
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u'action': u'created',
+                u'comment': {
+                    u'body': 'A very short comment.',
+                    u'id': 97,
+                    u'html_url': u'https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
+                    },
+                },
+            expectedlines = [
+                "'exampleuser' created issue 42 comment 97.",
+                "Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97",
+                "Body: A very short comment.",
+                ],
+            ),
+        dict( # Updating a long comment:
+            id = 'abcd-1234-ef09-cafe',
+            name = 'issue_comment',
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u'action': u'created',
+                u'comment': {
+                    u'body': """
+
+This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, which will be the cutoff enforced by formatting.
+
+  Also, it uses crazy markup like:
+
+    user!foo.example@blah
+
+ And ugly whitespace which should not bork irc clients:
+\r\n
+
+# TODO: read up on irc protocol and put scary stuff here.
+""",
+                    u'id': 97,
+                    u'html_url': u'https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
+                    },
+                },
+            expectedlines = [
+                "'exampleuser' created issue 42 comment 97.",
+                'Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
+                u'Body (truncated): This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, whic\u2026'.encode('utf8'), # U+2026 - horizontal ellipse.
+                # BUG: Is utf8 always acceptable in IRC?
                 ],
             ),
         ]

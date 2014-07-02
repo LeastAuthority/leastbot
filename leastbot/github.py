@@ -95,10 +95,10 @@ _formatters = FunctionTable('_format_')
 
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
-    return """\
-Pushed: %(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r
-Push diff: %(DIFFURL)s
-""" % dict(
+    return '\n'.join([
+        '%(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r',
+        'Push diff: %(DIFFURL)s',
+        ]) % dict(
         PUSHER      = einfo.pusher.email,
         COMMITCOUNT = len(einfo.commits),
         REF         = einfo.ref,
