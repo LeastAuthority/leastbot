@@ -214,12 +214,12 @@ class EventFormatterTests (unittest.TestCase):
                 u'action': u'opened',
                 u'issue': {
                     u'title': u'An example issue title.',
-                    u'id': 42,
+                    u'number': 42,
                     u'html_url': u'https://github.com/fakeuser/leastbot/issues/42',
                     },
                 },
             expectedlines = [
-                "'exampleuser' opened issue 42 'An example issue title.'",
+                "'exampleuser' opened issue 42: 'An example issue title.'",
                 "Issue: https://github.com/fakeuser/leastbot/issues/42",
                 ],
             ),
@@ -229,6 +229,7 @@ class EventFormatterTests (unittest.TestCase):
             info = {
                 u'sender': {u'login': u'exampleuser'},
                 u'action': u'created',
+                u'issue': { u'number': 42 },
                 u'comment': {
                     u'body': 'A very short comment.',
                     u'id': 97,
@@ -247,6 +248,7 @@ class EventFormatterTests (unittest.TestCase):
             info = {
                 u'sender': {u'login': u'exampleuser'},
                 u'action': u'created',
+                u'issue': { u'number': 42 },
                 u'comment': {
                     u'body': """
 
@@ -268,7 +270,7 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
             expectedlines = [
                 "'exampleuser' created issue 42 comment 97.",
                 'Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
-                u'Body (truncated): This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, whic\u2026'.encode('utf8'), # U+2026 - horizontal ellipse.
+                u'Body (truncated): This is a very long comment, with lots of whitespace.  Additionally the first line is longer than 120 characters, which\u2026'.encode('utf8'), # U+2026 - horizontal ellipse.
                 # BUG: Is utf8 always acceptable in IRC?
                 ],
             ),
@@ -279,7 +281,7 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
             evid = evspec['id']
             evtype = evspec['name']
             evinfo = evspec['info']
-            expectedformat = '\n'.join(evspec['expectedlines']) + '\n'
+            expectedformat = '\n'.join(evspec['expectedlines'])
 
             result = github.format_event(evid, evtype, evinfo)
 

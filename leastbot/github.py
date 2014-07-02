@@ -87,7 +87,7 @@ def format_event(eventid, eventtype, eventinfo):
 
 # Event formatting - innards:
 def _format_unknown_event(eid, etype, _einfo):
-    return 'No formatter for github event type %r with id %r.\n' % (etype, eid)
+    return 'No formatter for github event type %r with id %r.' % (etype, eid)
 
 
 _formatters = FunctionTable('_format_')
@@ -105,6 +105,47 @@ def _format_push(_eid, _etype, einfo):
         REPOURL     = einfo.repository.url,
         DIFFURL     = einfo.compare,
         )
+
+
+@_formatters.register
+def _format_issues(_eid, _etype, einfo):
+    return '\n'.join([
+        '%(SENDER)r %(ACTION)s issue %(NUMBER)r: %(TITLE)r',
+        'Issue: %(URL)s',
+        ]) % dict(
+        SENDER = einfo.sender.login,
+        ACTION = einfo.action,
+        NUMBER = einfo.issue.number,
+        TITLE  = einfo.issue.title,
+        URL    = einfo.issue.html_url,
+        )
+
+
+@_formatters.register
+def _format_issue_comment(_eid, _etype, einfo):
+    body = einfo.comment.body.strip()
+    trunctext = ''
+
+    if len(body) > 120:
+        body = body[:119] + u'\u2026'
+        trunctext = ' (truncated)'
+
+    body = body.encode('utf8') # BUG: Do encoding more consistently.
+
+    return '\n'.join([
+        '%(SENDER)r %(ACTION)s issue %(ISSUENUMBER)r comment %(COMMENTID)r.',
+        'Comment: %(URL)s',
+        'Body%(TRUNCTEXT)s: %(BODY)s',
+        ]) % dict(
+        SENDER      = einfo.sender.login,
+        ACTION      = einfo.action,
+        ISSUENUMBER = einfo.issue.number,
+        COMMENTID   = einfo.comment.id,
+        URL         = einfo.comment.html_url,
+        TRUNCTEXT   = trunctext,
+        BODY        = body,
+        )
+
 
 
 class _AttrLookupWrapper (object):
