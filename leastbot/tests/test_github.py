@@ -168,6 +168,7 @@ class XHubSignatureTestVector (object):
 
 class EventFormatterTests (unittest.TestCase):
     Vectors = [
+        # Unknown events:
         dict(
             id = 42,
             name = '! MAGICAL TEST EVENT !',
@@ -176,6 +177,16 @@ class EventFormatterTests (unittest.TestCase):
                 "No formatter for github event type '! MAGICAL TEST EVENT !' with id 42.",
                 ],
             ),
+
+        # ping events:
+        dict(
+            id = 42,
+            name = 'ping',
+            info = {},
+            expectedlines = None, # Swallow pings.
+            ),
+
+        # push events:
         dict( # A push with the expected parameters:
             id = 'abcd-1234-ef09-cafe',
             name = 'push',
@@ -206,6 +217,8 @@ class EventFormatterTests (unittest.TestCase):
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
                 ],
             ),
+
+        # issues events:
         dict(
             id = 'abcd-1234-ef09-cafe',
             name = 'issues',
@@ -223,6 +236,8 @@ class EventFormatterTests (unittest.TestCase):
                 "Issue: https://github.com/fakeuser/leastbot/issues/42",
                 ],
             ),
+
+        # issue_comment events:
         dict( # Updating a short comment:
             id = 'abcd-1234-ef09-cafe',
             name = 'issue_comment',
@@ -278,8 +293,12 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
             evid = evspec['id']
             evtype = evspec['name']
             evinfo = evspec['info']
-            expectedformat = '\n'.join(evspec['expectedlines'])
+            expected = evspec['expectedlines']
 
             result = github.format_event(evid, evtype, evinfo)
 
-            self.assertEqual(result, expectedformat)
+            if expected is None:
+                self.assertIsNone(result)
+            else:
+                expectedformat = '\n'.join(expected)
+                self.assertEqual(result, expectedformat)
