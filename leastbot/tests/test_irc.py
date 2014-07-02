@@ -149,16 +149,23 @@ class ClientProtocolTests (LogMockingTestCase):
             m_join,
             [call(self.channel)])
 
-    def test_github_notification_triggers_say(self):
+    def test_github_notification_triggers_say_with_github_formatting(self):
         m_say = self.patch('leastbot.irc.ClientProtocol.say')
+        m_format_event = self.patch('leastbot.github.format_event')
 
-        self.p.handle_github_notification(42, 'blah-event', {'fruit': 'apple', 'meat': 'pork'})
+        eventid = 42,
+        eventtype = 'blah-event'
+        eventinfo = {'fruit': 'apple', 'meat': 'pork'}
 
-        expectedmessage = "github notification (42, 'blah-event', ['fruit', 'meat'])"
+        self.p.handle_github_notification(eventid, eventtype, eventinfo)
+
+        self.assert_calls_equal(
+            m_format_event,
+            [call(eventid, eventtype, eventinfo)])
 
         self.assert_calls_equal(
             m_say,
-            [call(self.channel, expectedmessage)])
+            [call(self.channel, m_format_event.return_value)])
 
 
 class ClientProtocolFactoryTests (LogMockingTestCase):
