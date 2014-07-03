@@ -168,29 +168,47 @@ class ClientProtocolTests (LogMockingTestCase):
             [call(self.channel, m_format_event.return_value)])
 
     def test_github_notification_handles_swallowed_events(self):
+        repetitions = 3
+
         m_say = self.patch('leastbot.irc.ClientProtocol.say')
         m_format_event = self.patch('leastbot.github.format_event')
-        m_format_event.side_effect = [None] # Indicates the event should be swallowed.
+        m_format_event.side_effect = [None] * repetitions # Indicates an unhandled event.
 
         eventid = 42,
         eventtype = 'blah-event'
         eventinfo = {'fruit': 'apple', 'meat': 'pork'}
 
-        self.p.handle_github_notification(eventid, eventtype, eventinfo)
+        for i in range(repetitions):
+            self.reset_mocks()
 
-        self.assert_calls_equal(
-            m_format_event,
-            [call(eventid, eventtype, eventinfo)])
+            self.p.handle_github_notification(eventid, eventtype, eventinfo)
 
-        # Ensure we say nothing:
-        self.assert_calls_equal(
-            m_say,
-            [])
+            self.assert_calls_equal(
+                m_format_event,
+                [call(eventid, eventtype, eventinfo)])
 
-        # Ensure we log swallowed events:
-        self.assert_calls_equal(
-            self.m_loghandler,
-            [call.handle(ArgIsLogRecord(levelname='INFO', msg='Swallowed github %r event %r.'))])
+            expectedevdesc = 'Swallowed github %r event %r.'
+            expectedsaycalls = []
+
+            if i == 0:
+                # Ensure we say something the first time:
+
+                expectedsaycalls.append(
+                    call(
+                        self.channel,
+                        expectedevdesc + '\nI will say no more about event type %r.' % (
+                            eventtype,
+                            eventid,
+                            eventtype)))
+
+            self.assert_calls_equal(
+                m_say,
+                expectedsaycalls)
+
+            # Ensure we log swallowed events:
+            self.assert_calls_equal(
+                self.m_loghandler,
+                [call.handle(ArgIsLogRecord(levelname='INFO', msg=expectedevdesc))])
 
 
 class ClientProtocolFactoryTests (LogMockingTestCase):

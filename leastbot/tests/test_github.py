@@ -173,9 +173,7 @@ class EventFormatterTests (unittest.TestCase):
             id = 42,
             name = '! MAGICAL TEST EVENT !',
             info = {'fruit': 'banana', 'meat': 'mutton'},
-            expectedlines = [
-                "No formatter for github event type '! MAGICAL TEST EVENT !' with id 42.",
-                ],
+            expectedlines = None # Swallow unknown events.
             ),
 
         # ping events:
@@ -183,7 +181,7 @@ class EventFormatterTests (unittest.TestCase):
             id = 42,
             name = 'ping',
             info = {},
-            expectedlines = None, # Swallow pings.
+            expectedlines = None, # Ping is swallowed for now.
             ),
 
         # push events:
