@@ -10,7 +10,9 @@ class MockingTestCase (unittest.TestCase):
     def patch(self, name):
         p = mock.patch(name)
         self.addCleanup(p.stop)
-        return p.start()
+        m = p.start()
+        self._mockset.append(m)
+        return m
 
     def make_mock(self):
         m = mock.MagicMock()

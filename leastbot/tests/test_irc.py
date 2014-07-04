@@ -187,7 +187,7 @@ class ClientProtocolTests (LogMockingTestCase):
                 m_format_event,
                 [call(eventid, eventtype, eventinfo)])
 
-            expectedevdesc = 'Swallowed github %r event %r.'
+            expectedevdesc = "I don't know how to describe github %r events. Event id: %r"
             expectedsaycalls = []
 
             if i == 0:
@@ -196,7 +196,7 @@ class ClientProtocolTests (LogMockingTestCase):
                 expectedsaycalls.append(
                     call(
                         self.channel,
-                        expectedevdesc + '\nI will say no more about event type %r.' % (
+                        (expectedevdesc + '\nI will say no more about event type %r.') % (
                             eventtype,
                             eventid,
                             eventtype)))

@@ -28,6 +28,7 @@ class ClientProtocol (LogMixin, irc.IRCClient):
         self._password = password
         self._nickserv = nickserv
         self._channel = channel
+        self._swallowedevents = set()
         self._init_log()
 
         self._nickservloginsuccess = 'You are successfully identified as \x02%s\x02.' % (self.nickname,)
@@ -36,8 +37,20 @@ class ClientProtocol (LogMixin, irc.IRCClient):
     def handle_github_notification(self, eventid, name, details):
         message = github.format_event(eventid, name, details)
         if message is None:
-            self._log.info('Swallowed github %r event %r.', name, eventid)
+            self._handle_unknown_github_event(eventid, name, details)
         else:
+            self.say(self._channel, message)
+
+    def _handle_unknown_github_event(self, eventid, name, details):
+        logtmpl = "I don't know how to describe github %r events. Event id: %r"
+        self._log.info(logtmpl, name, eventid)
+
+        if name not in self._swallowedevents:
+            self._swallowedevents.add(name)
+            message = (logtmpl + '\nI will say no more about event type %r.') % (
+                name,
+                eventid,
+                name)
             self.say(self._channel, message)
 
     # Logging passthrough layer:

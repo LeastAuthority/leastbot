@@ -80,21 +80,20 @@ def constant_time_compare(a, b):
 
 # Event formatting - public api:
 def format_event(eventid, eventtype, eventinfo):
-    f = _formatters.get(eventtype, _format_unknown_event)
-    alw = _AttrLookupWrapper(eventinfo)
-    result = f(eventid, eventtype, alw)
-
-    if result is None:
-        return result
+    f = _formatters.get(eventtype)
+    if f is None:
+        return None
     else:
-        return result.encode('utf8') # BUG: Is this acceptable for IRC?
+        alw = _AttrLookupWrapper(eventinfo)
+        result = f(eventid, eventtype, alw)
+
+        if result is None:
+            return result
+        else:
+            return result.encode('utf8') # BUG: Is this acceptable for IRC?
 
 
 # Event formatting - innards:
-def _format_unknown_event(eid, etype, _einfo):
-    return 'No formatter for github event type %r with id %r.' % (etype, eid)
-
-
 _formatters = FunctionTable('_format_')
 
 
