@@ -4,6 +4,21 @@ leastbot
 
 Scratching an itch.
 
+.. toc::
+
+Release Process
+===============
+
+* Ensure all tickets for the target release milestone are closed except for the *release capstone ticket* which is always titled: `Release N.N`
+* Ensure the unittest coverage looks good.
+* Edit ``./setup.py`` to set the version to N.N, and commit this.
+* Install this on a staging test system and do some (*FIXME: Which?*) smoke tests.
+* Tag the revision as ``release-N.N`` and push the tag to github.
+* Run: ``./setup.py sdist --upload --sign --identity $YOUR_CODE_SIGNING_PGP_ID``
+* Create a new virtual env and run ``pip install leastbot``.  Check the installation was successful and has the right version (*FIXME: How?*).
+* Close the capstone ticket, which is the only remaining ticket in the milestone.
+* Bonus: Send announcements.
+
 Recommended Deployment on Debian-like
 =====================================
 
