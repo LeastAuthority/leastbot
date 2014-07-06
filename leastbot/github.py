@@ -108,7 +108,7 @@ def _format_push(_eid, _etype, einfo):
         '%(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r',
         'Push diff: %(DIFFURL)s',
         ]) % dict(
-        PUSHER      = einfo.pusher.email,
+        PUSHER      = einfo.pusher.name,
         COMMITCOUNT = len(einfo.commits),
         REF         = einfo.ref,
         REPOURL     = einfo.repository.url,
