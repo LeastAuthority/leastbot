@@ -122,6 +122,26 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
                 'Comment: https://github.com/fakeuser/leastbot/issues/42#issuecomment-97',
                 ],
             ),
+
+        # gollum
+        dict( # Updating a long comment:
+            id = 'abcd-1234-ef09-cafe',
+            name = 'issue_comment',
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u"pages": [
+                    {
+                        "title": "Home",
+                        "action": "edited",
+                        "html_url": "https://github.com/fakeuser/issues/wiki/Home"
+                        },
+                    ],
+                },
+            expectedlines = [
+                u"'exampleuser' edited wiki page 'Home'.",
+                'Page: https://github.com/fakeuser/issues/wiki/Home',
+                ],
+            )
         ]
 
     def test_all_vectors(self):
