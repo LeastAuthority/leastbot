@@ -105,14 +105,14 @@ def _format_ping(_eid, _etype, _einfo):
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
     return '\n'.join([
-        '%(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)r',
+        '%(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)s',
         'Push diff: %(DIFFURL)s',
         ]) % dict(
         PUSHER      = einfo.pusher.name,
         COMMITCOUNT = len(einfo.commits),
         REF         = einfo.ref,
         REPOURL     = einfo.repository.url,
-        DIFFURL     = einfo.compare,
+        DIFFURL     = einfo.compare.replace('^', '%5E'),
         )
 
 
