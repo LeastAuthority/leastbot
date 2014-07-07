@@ -8,7 +8,7 @@ setup(
     description='leastbot - Least Authority ircbot / webhook thingy.',
     url='https://github.com/nejucomo/leastbot',
     license='GPLv3',
-    version='0.2.dev2',
+    version='0.2.dev3',
     author='Nathan Wilcox',
     author_email='nathan@leastauthority.com',
     packages=find_packages(),
