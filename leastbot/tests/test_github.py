@@ -196,7 +196,7 @@ class EventFormatterTests (unittest.TestCase):
                 u'commits': [None] * 12, # Note - only the length is used.
                 },
             expectedlines = [
-                "'userA' pushed 12 commits to 'refs/heads/master' of 'https://github.com/fakeuser/leastbot'",
+                "'userA' pushed 12 commits to 'refs/heads/master' of https://github.com/fakeuser/leastbot",
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
                 ],
             ),
