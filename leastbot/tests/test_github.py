@@ -191,13 +191,13 @@ class EventFormatterTests (unittest.TestCase):
             info = {
                 u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
                 u'pusher': {u'email': u'fakeuser@example.com', u'name': u'userA'},
-                u'compare': u'https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082',
+                u'compare': u'https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8^...0343bc046082',
                 u'ref': u'refs/heads/master',
                 u'commits': [None] * 12, # Note - only the length is used.
                 },
             expectedlines = [
                 "'userA' pushed 12 commits to 'refs/heads/master' of https://github.com/fakeuser/leastbot",
-                "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
+                "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8%5E...0343bc046082",
                 ],
             ),
         dict( # A push with some missing parameters:
