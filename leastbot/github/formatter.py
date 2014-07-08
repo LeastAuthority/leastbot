@@ -27,13 +27,11 @@ def _format_ping(_eid, _etype, _einfo):
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
     return '\n'.join([
-        '%(PUSHER)r pushed %(COMMITCOUNT)r commits to %(REF)r of %(REPOURL)s',
-        'Push diff: %(DIFFURL)s',
-        ]) % dict(
-        PUSHER      = einfo.pusher.name,
+        '{e.pusher.name!r} pushed {COMMITCOUNT} commits to {e.ref!r} of {e.repository.url}',
+        'Push diff: {DIFFURL}',
+        ]).format(
+        e           = einfo,
         COMMITCOUNT = len(einfo.commits),
-        REF         = einfo.ref,
-        REPOURL     = einfo.repository.url,
         DIFFURL     = einfo.compare.replace('^', '%5E'),
         )
 
@@ -41,14 +39,10 @@ def _format_push(_eid, _etype, einfo):
 @_formatters.register
 def _format_issues(_eid, _etype, einfo):
     return '\n'.join([
-        '%(SENDER)r %(ACTION)s issue %(NUMBER)r: %(TITLE)r',
-        'Issue: %(URL)s',
-        ]) % dict(
-        SENDER = einfo.sender.login,
-        ACTION = einfo.action,
-        NUMBER = einfo.issue.number,
-        TITLE  = einfo.issue.title,
-        URL    = einfo.issue.html_url,
+        '{e.sender.login!r} {e.action} issue {e.issue.number}: {e.issue.title!r}',
+        'Issue: {e.issue.html_url}',
+        ]).format(
+        e = einfo,
         )
 
 
@@ -61,17 +55,13 @@ def _format_issue_comment(_eid, _etype, einfo):
         body = body[:120]
         trunctext = u'\u2026 (truncated)'
 
-    return '\n'.join([
-        '%(SENDER)r %(ACTION)s issue %(ISSUENUMBER)r comment %(COMMENTID)r: %(BODY)r%(TRUNCTEXT)s',
-        'Comment: %(URL)s',
-        ]) % dict(
-        SENDER      = einfo.sender.login,
-        ACTION      = einfo.action,
-        ISSUENUMBER = einfo.issue.number,
-        COMMENTID   = einfo.comment.id,
-        BODY        = body,
-        TRUNCTEXT   = trunctext,
-        URL         = einfo.comment.html_url,
+    return u'\n'.join([
+        '{e.sender.login!r} {e.action} issue {e.issue.number} comment {e.comment.id}: {BODY!r}{TRUNCTEXT}',
+        'Comment: {e.comment.html_url}',
+        ]).format(
+        e         = einfo,
+        BODY      = body,
+        TRUNCTEXT = trunctext,
         )
 
 
