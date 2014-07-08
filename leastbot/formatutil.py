@@ -1,3 +1,29 @@
+def dedent(s):
+    inlines = s.split('\n')
+    count = None
+    indent = None
+    outlines = []
+    for l in inlines:
+        if indent is None:
+            if l.strip() != '':
+                count = len(l) - len(l.lstrip(' '))
+                indent = l[:count]
+                outlines.append(l[count:])
+                continue
+            else:
+                continue
+        elif l.strip() == '':
+            outlines.append('')
+            continue
+        elif l[:count] == indent:
+            outlines.append(l[count:])
+            continue
+        else:
+            raise AssertionError('Subsequent lines must be indented at least as much as the first:\n%s' % (s,))
+
+    return '\n'.join(outlines)
+
+
 class DictFormatWrapper (object):
     def __init__(self, d, namepath=[]):
         self._d = d
