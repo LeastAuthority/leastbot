@@ -12,7 +12,7 @@ class WebserverTests (MockingTestCase):
         self.f_port = 1234
         self.m_reactor = self.make_mock()
         self.m_handle_event = self.make_mock()
-        self.m_WebhookResource = self.patch('leastbot.github.WebhookResource')
+        self.m_WebhookResource = self.patch('leastbot.github.webhook.WebhookResource')
         self.m_Site = self.patch('twisted.web.server.Site')
 
         self.s = webserver.WebServer(self.m_reactor, self.f_port, self.f_secret, self.m_handle_event)

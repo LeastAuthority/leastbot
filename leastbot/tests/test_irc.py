@@ -151,7 +151,7 @@ class ClientProtocolTests (LogMockingTestCase):
 
     def test_github_notification_triggers_say_with_github_formatting(self):
         m_say = self.patch('leastbot.irc.ClientProtocol.say')
-        m_format_event = self.patch('leastbot.github.format_event')
+        m_format_event = self.patch('leastbot.github.formatter.format_event')
 
         eventid = 42,
         eventtype = 'blah-event'
@@ -171,7 +171,7 @@ class ClientProtocolTests (LogMockingTestCase):
         repetitions = 3
 
         m_say = self.patch('leastbot.irc.ClientProtocol.say')
-        m_format_event = self.patch('leastbot.github.format_event')
+        m_format_event = self.patch('leastbot.github.formatter.format_event')
         m_format_event.side_effect = [None] * repetitions # Indicates an unhandled event.
 
         eventid = 42,

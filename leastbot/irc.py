@@ -1,7 +1,7 @@
 from twisted.words.protocols import irc
 from twisted.internet import protocol, ssl
 
-from leastbot import github
+from leastbot.github import formatter
 from leastbot.log import LogMixin
 
 
@@ -35,7 +35,7 @@ class ClientProtocol (LogMixin, irc.IRCClient):
 
     # Github notifications api:
     def handle_github_notification(self, eventid, name, details):
-        message = github.format_event(eventid, name, details)
+        message = formatter.format_event(eventid, name, details)
         if message is None:
             self._handle_unknown_github_event(eventid, name, details)
         else:
