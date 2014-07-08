@@ -136,5 +136,5 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
             if expected is None:
                 self.assertIsNone(result)
             else:
-                expectedformat = '\n'.join(expected)
+                expectedformat = '\n'.join(expected) + '\n'
                 self.assertEqual(result, expectedformat)

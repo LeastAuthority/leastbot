@@ -1,6 +1,6 @@
 from functable import FunctionTable
 
-from leastbot.formatutil import DictFormatWrapper
+from leastbot.formatutil import DictFormatWrapper, dedent
 
 
 def format_event(eventid, eventtype, eventinfo):
@@ -28,10 +28,10 @@ def _format_ping(_eid, _etype, _einfo):
 
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
-    return '\n'.join([
-        '{e.pusher.name!r} pushed {COMMITCOUNT} commits to {e.ref!r} of {e.repository.url}',
-        'Push diff: {DIFFURL}',
-        ]).format(
+    return dedent('''
+        {e.pusher.name!r} pushed {COMMITCOUNT} commits to {e.ref!r} of {e.repository.url}
+        Push diff: {DIFFURL}
+        ''').format(
         e           = einfo,
         COMMITCOUNT = len(einfo.commits),
         DIFFURL     = einfo.compare.replace('^', '%5E'),
@@ -40,10 +40,10 @@ def _format_push(_eid, _etype, einfo):
 
 @_formatters.register
 def _format_issues(_eid, _etype, einfo):
-    return '\n'.join([
-        '{e.sender.login!r} {e.action} issue {e.issue.number}: {e.issue.title!r}',
-        'Issue: {e.issue.html_url}',
-        ]).format(
+    return dedent('''
+        {e.sender.login!r} {e.action} issue {e.issue.number}: {e.issue.title!r}
+        Issue: {e.issue.html_url}
+        ''').format(
         e = einfo,
         )
 
@@ -57,10 +57,10 @@ def _format_issue_comment(_eid, _etype, einfo):
         body = body[:120]
         trunctext = u'\u2026 (truncated)'
 
-    return u'\n'.join([
-        '{e.sender.login!r} {e.action} issue {e.issue.number} comment {e.comment.id}: {BODY!r}{TRUNCTEXT}',
-        'Comment: {e.comment.html_url}',
-        ]).format(
+    return dedent(u'''
+        {e.sender.login!r} {e.action} issue {e.issue.number} comment {e.comment.id}: {BODY!r}{TRUNCTEXT}
+        Comment: {e.comment.html_url}
+        ''').format(
         e         = einfo,
         BODY      = body,
         TRUNCTEXT = trunctext,
