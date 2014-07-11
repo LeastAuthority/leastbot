@@ -6,9 +6,9 @@ from setuptools import setup, find_packages
 setup(
     name='leastbot',
     description='leastbot - Least Authority ircbot / webhook thingy.',
-    url='https://github.com/nejucomo/leastbot',
+    url='https://github.com/leastauthority/leastbot',
     license='GPLv3',
-    version='0.2',
+    version='0.2.1.dev0',
     author='Nathan Wilcox',
     author_email='nathan@leastauthority.com',
     packages=find_packages(),
