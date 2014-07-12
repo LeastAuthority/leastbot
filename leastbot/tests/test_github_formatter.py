@@ -124,9 +124,9 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
             ),
 
         # gollum
-        dict( # Updating a long comment:
+        dict(
             id = 'abcd-1234-ef09-cafe',
-            name = 'issue_comment',
+            name = 'gollum',
             info = {
                 u'sender': {u'login': u'exampleuser'},
                 u"pages": [
