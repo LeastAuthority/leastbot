@@ -65,3 +65,17 @@ def _format_issue_comment(_eid, _etype, einfo):
         BODY      = body,
         TRUNCTEXT = trunctext,
         )
+
+
+@_formatters.register
+def _format_gollum(_eid, _etype, einfo):
+    return dedent('''
+        {e.sender.login!r} edited wiki pages: {PAGE_LIST}
+        {PAGE_URLS}
+        ''').format(
+        e = einfo,
+        PAGE_LIST = ', '.join( '{title}'.format(**d) for d in einfo.pages ),
+        PAGE_URLS = '\n'.join( 'Page: {html_url}'.format(**d) for d in einfo.pages ),
+        )
+
+
