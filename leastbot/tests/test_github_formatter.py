@@ -138,10 +138,36 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
                     ],
                 },
             expectedlines = [
-                u"'exampleuser' edited wiki page 'Home'.",
+                u"'exampleuser' edited wiki pages: Home",
                 'Page: https://github.com/fakeuser/issues/wiki/Home',
                 ],
-            )
+            ),
+
+        dict(
+            id = 'abcd-1234-ef09-cafe',
+            name = 'gollum',
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u"pages": [
+                    {
+                        "title": "Home",
+                        "action": "edited",
+                        "html_url": "https://github.com/fakeuser/issues/wiki/Home"
+                        },
+                    {
+                        "title": "Bob's Page",
+                        "action": "edited",
+                        "html_url": "https://github.com/fakeuser/issues/wiki/Bob%27s%20Page",
+                        },
+                    ],
+                },
+            expectedlines = [
+                u"'exampleuser' edited wiki pages: Home, Bob's Page",
+                u'Page: https://github.com/fakeuser/issues/wiki/Home',
+                u'Page: https://github.com/fakeuser/issues/wiki/Bob%27s%20Page',
+                ],
+            ),
+
         ]
 
     def test_all_vectors(self):
