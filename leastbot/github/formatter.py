@@ -4,21 +4,29 @@ from leastbot.formatutil import DictFormatWrapper, dedent
 
 
 def format_event(eventid, eventtype, eventinfo):
-    f = _formatters.get(eventtype)
-    if f is None:
-        return None
-    else:
-        alw = DictFormatWrapper(eventinfo)
-        result = f(eventid, eventtype, alw)
+    f = _formatters.get(eventtype, _format_generic)
 
-        if result is None:
-            return result
-        else:
-            return result.encode('utf8') # BUG: Is this acceptable for IRC?
+    alw = DictFormatWrapper(eventinfo)
+    result = f(eventid, eventtype, alw)
+
+    if result is None:
+        return result
+    else:
+        return result.encode('utf8') # BUG: Is this acceptable for IRC?
 
 
 # Event formatting - innards:
+def _format_generic(_eid, etype, einfo):
+    return dedent('''
+        github {eventname!r} event sent by {e.sender.login!r} in {e.repository.url}
+        ''').format(
+        e         = einfo,
+        eventname = etype
+        )
+
+
 _formatters = FunctionTable('_format_')
+
 
 
 @_formatters.register

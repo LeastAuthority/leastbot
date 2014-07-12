@@ -36,7 +36,7 @@ class EventFormatterTests (unittest.TestCase):
                 },
             # Always log common fields of unknown events:
             expectedlines = [
-                "github '! MAGICAL TEST EVENT !' event sent by <Missing: sender> in https://github.com/fakeuser/leastbot"
+                "github '! MAGICAL TEST EVENT !' event sent by <Missing sender> in https://github.com/fakeuser/leastbot"
                 ],
             ),
 
