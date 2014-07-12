@@ -10,8 +10,34 @@ class EventFormatterTests (unittest.TestCase):
         dict(
             id = 42,
             name = '! MAGICAL TEST EVENT !',
-            info = {'fruit': 'banana', 'meat': 'mutton'},
-            expectedlines = None # Swallow unknown events.
+            info = {
+                u'sender': {u'login': u'exampleuser'},
+                u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
+
+                # Include some noise which should not affect announcement output:
+                u'fruit': 'banana',
+                'meat': 'mutton'
+                },
+            # Always log common fields of unknown events:
+            expectedlines = [
+                "github '! MAGICAL TEST EVENT !' event sent by 'exampleuser' in https://github.com/fakeuser/leastbot"
+                ],
+            ),
+
+        dict( # An unknown event with missing common fields:
+            id = 42,
+            name = '! MAGICAL TEST EVENT !',
+            info = {
+                u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
+
+                # Include some noise which should not affect announcement output:
+                u'fruit': 'banana',
+                'meat': 'mutton'
+                },
+            # Always log common fields of unknown events:
+            expectedlines = [
+                "github '! MAGICAL TEST EVENT !' event sent by <Missing: sender> in https://github.com/fakeuser/leastbot"
+                ],
             ),
 
         # ping events:
