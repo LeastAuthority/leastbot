@@ -44,8 +44,12 @@ class EventFormatterTests (unittest.TestCase):
         dict(
             id = 42,
             name = 'ping',
-            info = {},
-            expectedlines = None, # Ping is swallowed for now.
+            info = {
+                u'zen': u'If propaganda falls in an empty channel, does it make a mind control wave?'
+                },
+            expectedlines = [
+                "Ping! 'If propaganda falls in an empty channel, does it make a mind control wave?'"
+                ],
             ),
 
         # push events:
@@ -205,8 +209,5 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
 
             result = format_event(evid, evtype, evinfo)
 
-            if expected is None:
-                self.assertIsNone(result)
-            else:
-                expectedformat = '\n'.join(expected) + '\n'
-                self.assertEqual(result, expectedformat)
+            expectedformat = '\n'.join(expected) + '\n'
+            self.assertEqual(result, expectedformat)
