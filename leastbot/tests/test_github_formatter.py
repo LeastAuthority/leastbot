@@ -9,7 +9,7 @@ class EventFormatterTests (unittest.TestCase):
         # Unknown events:
         dict(
             id = 42,
-            name = '! MAGICAL TEST EVENT !',
+            name = u'! MAGICAL TEST EVENT !',
             info = {
                 u'sender': {u'login': u'exampleuser'},
                 u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
@@ -26,7 +26,7 @@ class EventFormatterTests (unittest.TestCase):
 
         dict( # An unknown event with missing common fields:
             id = 42,
-            name = '! MAGICAL TEST EVENT !',
+            name = u'! MAGICAL TEST EVENT !',
             info = {
                 u'repository': {u'url': u'https://github.com/fakeuser/leastbot'},
 
@@ -36,7 +36,7 @@ class EventFormatterTests (unittest.TestCase):
                 },
             # Always log common fields of unknown events:
             expectedlines = [
-                "github '! MAGICAL TEST EVENT !' event sent by <Missing sender> in https://github.com/fakeuser/leastbot"
+                "github '! MAGICAL TEST EVENT !' event sent by <Missing event.sender> in https://github.com/fakeuser/leastbot"
                 ],
             ),
 
@@ -75,7 +75,7 @@ class EventFormatterTests (unittest.TestCase):
                 # u'commits' is misisng.
                 },
             expectedlines = [
-                "<Missing pusher> pushed 4294967295 commits to 'refs/heads/master' of <Missing repository/url>",
+                "<Missing event.pusher> pushed <Missing event.commits> commits to 'refs/heads/master' of <Missing event.repository.url>",
                 "Push diff: https://github.com/fakeuser/leastbot/compare/74cdf0cb7cd8...0343bc046082",
                 ],
             ),
@@ -165,7 +165,7 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
                 },
             expectedlines = [
                 u"'exampleuser' edited wiki pages: Home",
-                'Page: https://github.com/fakeuser/issues/wiki/Home',
+                'https://github.com/fakeuser/issues/wiki/Home',
                 ],
             ),
 
@@ -189,8 +189,8 @@ This is a very long comment, with lots of whitespace.  Additionally the first li
                 },
             expectedlines = [
                 u"'exampleuser' edited wiki pages: Home, Bob's Page",
-                u'Page: https://github.com/fakeuser/issues/wiki/Home',
-                u'Page: https://github.com/fakeuser/issues/wiki/Bob%27s%20Page',
+                u'https://github.com/fakeuser/issues/wiki/Home',
+                u'https://github.com/fakeuser/issues/wiki/Bob%27s%20Page',
                 ],
             ),
 

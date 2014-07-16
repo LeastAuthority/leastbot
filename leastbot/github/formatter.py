@@ -1,13 +1,16 @@
 from functable import FunctionTable
 
-from leastbot.formatutil import DictFormatWrapper, dedent
+from leastbot.formatutil import wrap_template_param, dedent
 
 
 def format_event(eventid, eventtype, eventinfo):
     f = _formatters.get(eventtype, _format_generic)
 
-    alw = DictFormatWrapper(eventinfo)
-    result = f(eventid, eventtype, alw)
+    result = f(
+        wrap_template_param(eventid, [], 'eventid'),
+        wrap_template_param(eventtype, [], 'eventtype'),
+        wrap_template_param(eventinfo, [], 'event'),
+        )
 
     if result is None:
         return result
@@ -17,8 +20,8 @@ def format_event(eventid, eventtype, eventinfo):
 
 # Event formatting - innards:
 def _format_generic(_eid, etype, einfo):
-    return dedent('''
-        github {eventname!r} event sent by {e.sender.login!r} in {e.repository.url}
+    return dedent(u'''
+        github {eventname} event sent by {e.sender.login} in {e.repository.url.urlencoding}
         ''').format(
         e         = einfo,
         eventname = etype
@@ -36,21 +39,20 @@ def _format_ping(_eid, _etype, _einfo):
 
 @_formatters.register
 def _format_push(_eid, _etype, einfo):
-    return dedent('''
-        {e.pusher.name!r} pushed {COMMITCOUNT} commits to {e.ref!r} of {e.repository.url}
-        Push diff: {DIFFURL}
+    return dedent(u'''
+        {e.pusher.name} pushed {e.commits.len} commits to {e.ref} of {e.repository.url.urlencoding}
+        Push diff: {e.compare.urlencoding}
         ''').format(
-        e           = einfo,
-        COMMITCOUNT = len(einfo.commits),
-        DIFFURL     = einfo.compare.replace('^', '%5E'),
+        e       = einfo,
+        DIFFURL = einfo.compare._v.replace('^', '%5E'),
         )
 
 
 @_formatters.register
 def _format_issues(_eid, _etype, einfo):
-    return dedent('''
-        {e.sender.login!r} {e.action} issue {e.issue.number}: {e.issue.title!r}
-        Issue: {e.issue.html_url}
+    return dedent(u'''
+        {e.sender.login} {e.action.bare} issue {e.issue.number}: {e.issue.title}
+        Issue: {e.issue.html_url.urlencoding}
         ''').format(
         e = einfo,
         )
@@ -58,32 +60,21 @@ def _format_issues(_eid, _etype, einfo):
 
 @_formatters.register
 def _format_issue_comment(_eid, _etype, einfo):
-    body = einfo.comment.body.strip()
-    trunctext = ''
-
-    if len(body) > 120:
-        body = body[:120]
-        trunctext = u'\u2026 (truncated)'
-
     return dedent(u'''
-        {e.sender.login!r} {e.action} issue {e.issue.number} comment {e.comment.id}: {BODY!r}{TRUNCTEXT}
-        Comment: {e.comment.html_url}
+        {e.sender.login} {e.action.bare} issue {e.issue.number} comment {e.comment.id}: {e.comment.body}
+        Comment: {e.comment.html_url.urlencoding}
         ''').format(
-        e         = einfo,
-        BODY      = body,
-        TRUNCTEXT = trunctext,
+        e = einfo,
         )
 
 
 @_formatters.register
 def _format_gollum(_eid, _etype, einfo):
-    return dedent('''
-        {e.sender.login!r} edited wiki pages: {PAGE_LIST}
-        {PAGE_URLS}
+    return dedent(u'''
+        {e.sender.login} edited wiki pages: {e.pages[*.title.bare].comma_separated}
+        {e.pages[*.html_url.urlencoding].newline_separated}
         ''').format(
         e = einfo,
-        PAGE_LIST = ', '.join( '{title}'.format(**d) for d in einfo.pages ),
-        PAGE_URLS = '\n'.join( 'Page: {html_url}'.format(**d) for d in einfo.pages ),
         )
 
 
